@@ -16,7 +16,12 @@ def main() -> None:
         target_object="cube",
     )
     agent = Agent(world_state)
-    agent.run("pickup_object")
+    structure = agent.plan("pickup_object")
+
+    print("Structured behavior tree:")
+    print(structure.model_dump_json(indent=2))
+
+    agent.run_structure(structure)
 
 
 if __name__ == "__main__":

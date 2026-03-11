@@ -14,6 +14,11 @@ agentic_sandbox/
 │   ├── __init__.py
 │   ├── agent.py
 │   ├── world_state.py
+│   ├── bt_spec/
+│   │   ├── __init__.py
+│   │   ├── base.py
+│   │   ├── nodes.py
+│   │   └── tree_structure.py
 │   ├── planning/
 │   │   ├── __init__.py
 │   │   └── planner.py
@@ -43,6 +48,17 @@ Goal -> Planner -> Behavior Tree -> Skills -> World State
 - The planner turns that goal into a behavior tree.
 - The behavior tree executes skills in order.
 - Skills read and update the world state.
+
+## Spec vs Runtime
+
+The project now has a small architecture split:
+
+- `bt_spec` contains the validated, structured behavior tree representation intended for planning and future LLM-generated output.
+- The runtime behavior tree remains the execution layer used by the current demo.
+
+Current flow:
+
+Goal -> Planner -> `bt_spec` structure -> runtime tree -> Skills -> World State
 
 ## Run
 
