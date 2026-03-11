@@ -62,6 +62,19 @@ Goal -> Planner -> `bt_spec` structure -> `bt_runtime` compiler -> `py_trees` tr
 
 This split prepares the project for future LLM-generated tree output while keeping planning, validation, and execution clearly separated.
 
+## Planning
+
+- `BasePlanner` defines the planner interface used by the agent.
+- `RuleBasedPlanner` is the current baseline planner and returns a validated `BehaviorTreeStructure` for known goals.
+- This abstraction is intended to make it straightforward to add a future `LLMPlanner` without changing the runtime pipeline.
+
+## Visualization
+
+- The runtime tree can be rendered as terminal text.
+- The project also attempts to export tree images using built-in `py_trees` rendering support.
+- Generated tree artifacts are written under `outputs/trees/`.
+- If external Graphviz tooling is unavailable, the demo falls back to text visualization and continues running.
+
 ## Run
 
 Use `uv` to run the demo:

@@ -5,6 +5,8 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from agentic.agent import Agent
+from agentic.bt_runtime.executor import execute_tree
+from agentic.planning.rule_based_planner import RuleBasedPlanner
 from agentic.world_state import WorldState
 
 
@@ -15,7 +17,7 @@ def main() -> None:
         holding_object=False,
         target_object="cube",
     )
-    agent = Agent(world_state)
+    agent = Agent(world_state, planner=RuleBasedPlanner())
     structure = agent.plan("pickup_object")
 
     print("Structured behavior tree:")
@@ -24,12 +26,9 @@ def main() -> None:
     print(f"Planning for goal: {structure.goal}")
 
     runtime_tree = agent.compile(structure)
-    print("Runtime behavior tree:")
-    from agentic.bt_runtime.visualization import print_ascii_tree
-
-    print_ascii_tree(runtime_tree)
-
-    from agentic.bt_runtime.executor import execute_tree
+    artifacts = agent.visualize(runtime_tree, structure.goal)
+    if artifacts:
+        print(f"Exported tree artifacts: {artifacts}")
 
     result = execute_tree(runtime_tree)
 
