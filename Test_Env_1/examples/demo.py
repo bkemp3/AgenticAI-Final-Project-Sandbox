@@ -20,8 +20,25 @@ def main() -> None:
 
     print("Structured behavior tree:")
     print(structure.model_dump_json(indent=2))
+    print("Architecture: goal -> planner -> structured tree -> compiler -> py_trees runtime -> execution")
+    print(f"Planning for goal: {structure.goal}")
 
-    agent.run_structure(structure)
+    runtime_tree = agent.compile(structure)
+    print("Runtime behavior tree:")
+    from agentic.bt_runtime.visualization import print_ascii_tree
+
+    print_ascii_tree(runtime_tree)
+
+    from agentic.bt_runtime.executor import execute_tree
+
+    result = execute_tree(runtime_tree)
+
+    if result.name == "SUCCESS":
+        print("Goal achieved")
+    else:
+        print("Goal failed")
+
+    print(f"Final world state: {world_state}")
 
 
 if __name__ == "__main__":

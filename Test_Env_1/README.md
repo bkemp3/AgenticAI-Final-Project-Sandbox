@@ -54,11 +54,13 @@ Goal -> Planner -> Behavior Tree -> Skills -> World State
 The project now has a small architecture split:
 
 - `bt_spec` contains the validated, structured behavior tree representation intended for planning and future LLM-generated output.
-- The runtime behavior tree remains the execution layer used by the current demo.
+- `bt_runtime` contains the executable `py_trees` implementation used by the current demo.
 
 Current flow:
 
-Goal -> Planner -> `bt_spec` structure -> runtime tree -> Skills -> World State
+Goal -> Planner -> `bt_spec` structure -> `bt_runtime` compiler -> `py_trees` tree -> World State
+
+This split prepares the project for future LLM-generated tree output while keeping planning, validation, and execution clearly separated.
 
 ## Run
 
