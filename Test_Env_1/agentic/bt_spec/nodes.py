@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Annotated, Literal
+from typing import Literal
 
 from pydantic import Field
 
@@ -46,15 +46,14 @@ class HoldingObjectNode(BTNodeModel):
     type: Literal["holding_object"]
 
 
-BehaviorTreeNode = Annotated[
+BehaviorTreeNode = (
     SequenceNode
     | SelectorNode
     | DetectObjectNode
     | PickObjectNode
     | ObjectVisibleNode
-    | HoldingObjectNode,
-    Field(discriminator="type"),
-]
+    | HoldingObjectNode
+)
 
 SequenceNode.model_rebuild()
 SelectorNode.model_rebuild()

@@ -5,6 +5,10 @@ from abc import ABC, abstractmethod
 from agentic.bt_spec.tree_structure import BehaviorTreeStructure
 
 
+class PlannerError(RuntimeError):
+    """Raised when a planner cannot produce a valid behavior tree structure."""
+
+
 class BasePlanner(ABC):
     """Planner interface for producing validated behavior tree structures."""
 

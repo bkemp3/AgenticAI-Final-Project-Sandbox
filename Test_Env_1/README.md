@@ -66,7 +66,10 @@ This split prepares the project for future LLM-generated tree output while keepi
 
 - `BasePlanner` defines the planner interface used by the agent.
 - `RuleBasedPlanner` is the current baseline planner and returns a validated `BehaviorTreeStructure` for known goals.
+- `LLMPlanner` is a second planner implementation that asks an OpenAI model to return a structured `BehaviorTreeStructure`.
 - This abstraction is intended to make it straightforward to add a future `LLMPlanner` without changing the runtime pipeline.
+
+`LLMPlanner` uses the existing Pydantic schema as the structured output target, so the model is constrained to the current node vocabulary and the returned plan is validated before execution.
 
 ## Visualization
 
@@ -82,3 +85,18 @@ Use `uv` to run the demo:
 ```bash
 uv run examples/demo.py
 ```
+
+Run the rule-based planner explicitly:
+
+```bash
+uv run examples/demo.py --planner rule
+```
+
+Run the LLM planner:
+
+```bash
+export OPENAI_API_KEY="your_api_key_here"
+uv run examples/demo.py --planner llm
+```
+
+The LLM planner reads the API key from `OPENAI_API_KEY` and generates a validated `BehaviorTreeStructure` before the tree is compiled and executed.
