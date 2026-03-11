@@ -1,102 +1,60 @@
 # Agentic Sandbox
 
-`agentic-sandbox` is a minimal Python research sandbox for experimenting with an autonomous agent that composes and executes behavior trees.
+`agentic-sandbox` is a small Python research sandbox for experimenting with autonomous agents that plan with validated behavior tree specs and execute them with `py_trees`.
 
-The code is intentionally small and readable so it can grow later into a larger agentic AI project with components such as LLM planners, runtime monitors, or simulators.
+The project is intentionally compact, but the architecture is split so it can grow toward LLM planning, monitoring, replanning, and recovery.
 
-## Folder layout
+## Three Layers
 
-```text
-agentic_sandbox/
-├── pyproject.toml
-├── README.md
-├── agentic/
-│   ├── __init__.py
-│   ├── agent.py
-│   ├── world_state.py
-│   ├── bt_spec/
-│   │   ├── __init__.py
-│   │   ├── base.py
-│   │   ├── nodes.py
-│   │   └── tree_structure.py
-│   ├── planning/
-│   │   ├── __init__.py
-│   │   └── planner.py
-│   ├── behavior_tree/
-│   │   ├── __init__.py
-│   │   ├── nodes.py
-│   │   ├── status.py
-│   │   └── tree.py
-│   ├── runtime/
-│   │   ├── __init__.py
-│   │   └── executor.py
-│   └── skills/
-│       ├── __init__.py
-│       ├── base_skill.py
-│       └── basic_skills.py
-└── examples/
-    └── demo.py
-```
+- Planner layer: `RuleBasedPlanner` and `LLMPlanner` generate a validated `BehaviorTreeStructure`.
+- `bt_runtime`: compiles that structure into an executable `py_trees` tree and runs it.
+- LangGraph orchestration: coordinates the end-to-end pipeline around planning, compilation, visualization, and execution.
 
-## Architecture
-
-The sandbox follows a simple flow:
-
-Goal -> Planner -> Behavior Tree -> Skills -> World State
-
-- The agent receives a goal.
-- The planner turns that goal into a behavior tree.
-- The behavior tree executes skills in order.
-- Skills read and update the world state.
-
-## Spec vs Runtime
-
-The project now has a small architecture split:
-
-- `bt_spec` contains the validated, structured behavior tree representation intended for planning and future LLM-generated output.
-- `bt_runtime` contains the executable `py_trees` implementation used by the current demo.
+Important: LangGraph is not the behavior tree. The behavior tree itself remains a `py_trees` runtime artifact compiled from `bt_spec`.
 
 Current flow:
 
-Goal -> Planner -> `bt_spec` structure -> `bt_runtime` compiler -> `py_trees` tree -> World State
+Goal -> planner selection -> plan generation -> validation -> compilation -> visualization -> execution -> result
 
-This split prepares the project for future LLM-generated tree output while keeping planning, validation, and execution clearly separated.
+This keeps orchestration separate from the behavior tree runtime and prepares the system for future replanning, monitoring, and recovery.
 
 ## Planning
 
-- `BasePlanner` defines the planner interface used by the agent.
-- `RuleBasedPlanner` is the current baseline planner and returns a validated `BehaviorTreeStructure` for known goals.
-- `LLMPlanner` is a second planner implementation that asks an OpenAI model to return a structured `BehaviorTreeStructure`.
-- This abstraction is intended to make it straightforward to add a future `LLMPlanner` without changing the runtime pipeline.
+- `BasePlanner` defines the planner interface.
+- `RuleBasedPlanner` is the current baseline planner.
+- `LLMPlanner` uses the OpenAI Python SDK to request a structured `BehaviorTreeStructure`.
+- Planners return validated `BehaviorTreeStructure` objects, not executable code.
 
-`LLMPlanner` uses the existing Pydantic schema as the structured output target, so the model is constrained to the current node vocabulary and the returned plan is validated before execution.
+To use `LLMPlanner`, set:
+
+```bash
+export OPENAI_API_KEY="your_api_key_here"
+```
 
 ## Visualization
 
-- The runtime tree can be rendered as terminal text.
-- The project also attempts to export tree images using built-in `py_trees` rendering support.
-- Generated tree artifacts are written under `outputs/trees/`.
-- If external Graphviz tooling is unavailable, the demo falls back to text visualization and continues running.
+- Runtime trees are printed as terminal text.
+- The demo also attempts image export with `py_trees`.
+- The LangGraph orchestration graph is also exported as Mermaid text and, when available, as a PNG.
+- Generated artifacts are stored under `outputs/trees/`.
+- LangGraph graph artifacts are stored under `outputs/graphs/`.
 
 ## Run
 
-Use `uv` to run the demo:
+Default rule-based demo:
 
 ```bash
 uv run examples/demo.py
 ```
 
-Run the rule-based planner explicitly:
+Explicit rule-based planner:
 
 ```bash
-uv run examples/demo.py --planner rule
+uv run examples/demo.py --planner rule_based
 ```
 
-Run the LLM planner:
+LLM planner:
 
 ```bash
-export OPENAI_API_KEY="your_api_key_here"
 uv run examples/demo.py --planner llm
 ```
-
-The LLM planner reads the API key from `OPENAI_API_KEY` and generates a validated `BehaviorTreeStructure` before the tree is compiled and executed.

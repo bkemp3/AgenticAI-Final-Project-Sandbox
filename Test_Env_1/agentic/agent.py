@@ -1,50 +1,39 @@
-import py_trees
-
-from agentic.bt_runtime.compiler import compile_behavior_tree
-from agentic.bt_runtime.executor import execute_tree
-from agentic.bt_runtime.visualization import export_tree_image, print_ascii_tree
-from agentic.bt_spec.tree_structure import BehaviorTreeStructure
-from agentic.planning.base import BasePlanner
-from agentic.planning.rule_based_planner import RuleBasedPlanner
+from agentic.orchestration.graph import build_orchestration_app
+from agentic.orchestration.state import OrchestrationState
+from agentic.orchestration.visualization import export_langgraph_visualization
 from agentic.world_state import WorldState
 
 
 class Agent:
-    """Small agent that plans and executes a goal."""
+    """Agent that runs the pipeline through LangGraph orchestration."""
 
     def __init__(
         self,
         world_state: WorldState,
-        planner: BasePlanner | None = None,
+        planner_type: str = "rule_based",
     ) -> None:
         self.world_state = world_state
-        self.planner = planner or RuleBasedPlanner()
+        self.planner_type = planner_type
+        self.app = build_orchestration_app()
 
-    def plan(self, goal: str) -> BehaviorTreeStructure:
-        return self.planner.create_plan(goal)
+    def run(self, goal: str) -> OrchestrationState:
+        """Run the full planning and execution workflow for a goal."""
 
-    def compile(
-        self, structure: BehaviorTreeStructure
-    ) -> py_trees.trees.BehaviourTree:
-        return compile_behavior_tree(structure, self.world_state)
-
-    def visualize(self, tree: py_trees.trees.BehaviourTree, name: str) -> dict[str, str] | None:
-        print("Runtime behavior tree:")
-        print_ascii_tree(tree)
-        return export_tree_image(tree, name=name)
-
-    def run(self, goal: str) -> None:
-        structure = self.plan(goal)
-        print("Structured behavior tree:")
-        print(structure.model_dump_json(indent=2))
-        print(f"Planning for goal: {structure.goal}")
-        tree = self.compile(structure)
-        artifacts = self.visualize(tree, structure.goal)
-        if artifacts:
-            print(f"Exported tree artifacts: {artifacts}")
-        result = execute_tree(tree)
-
-        if result is py_trees.common.Status.SUCCESS:
-            print("Goal achieved")
-        else:
-            print("Goal failed")
+        graph_artifacts = export_langgraph_visualization(
+            self.app,
+            name="langgraph_pipeline",
+        )
+        initial_state: OrchestrationState = {
+            "goal": goal,
+            "planner_type": self.planner_type,
+            "world_state": self.world_state,
+            "planner": None,
+            "tree_spec": None,
+            "compiled_tree": None,
+            "execution_status": None,
+            "error_message": None,
+            "tree_image_path": None,
+            "graph_mermaid_path": graph_artifacts["mermaid"],
+            "graph_image_path": graph_artifacts["png"],
+        }
+        return self.app.invoke(initial_state)

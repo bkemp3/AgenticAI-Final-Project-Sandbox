@@ -6,10 +6,6 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from agentic.agent import Agent
-from agentic.bt_runtime.executor import execute_tree
-from agentic.planning.base import PlannerError
-from agentic.planning.llm_planner import LLMPlanner
-from agentic.planning.rule_based_planner import RuleBasedPlanner
 from agentic.world_state import WorldState
 
 
@@ -17,17 +13,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run the agentic sandbox demo.")
     parser.add_argument(
         "--planner",
-        choices=("rule", "llm"),
-        default="rule",
+        choices=("rule_based", "llm"),
+        default="rule_based",
         help="Select which planner implementation to use.",
     )
     return parser.parse_args()
-
-
-def build_planner(planner_name: str) -> RuleBasedPlanner | LLMPlanner:
-    if planner_name == "llm":
-        return LLMPlanner()
-    return RuleBasedPlanner()
 
 
 def main() -> None:
@@ -38,32 +28,22 @@ def main() -> None:
         holding_object=False,
         target_object="cube",
     )
-    planner = build_planner(args.planner)
-    agent = Agent(world_state, planner=planner)
-    try:
-        structure = agent.plan("pickup_object")
-    except PlannerError as exc:
-        print(f"Planner error: {exc}")
-        raise SystemExit(1) from exc
+    agent = Agent(world_state, planner_type=args.planner)
+    result = agent.run("pickup_object")
 
-    print(f"Planner: {planner.__class__.__name__}")
-    print("Structured behavior tree:")
-    print(structure.model_dump_json(indent=2))
     print("Architecture: goal -> planner -> structured tree -> compiler -> py_trees runtime -> execution")
-    print(f"Planning for goal: {structure.goal}")
-
-    runtime_tree = agent.compile(structure)
-    artifacts = agent.visualize(runtime_tree, structure.goal)
-    if artifacts:
-        print(f"Exported tree artifacts: {artifacts}")
-
-    result = execute_tree(runtime_tree)
-
-    if result.name == "SUCCESS":
-        print("Goal achieved")
-    else:
-        print("Goal failed")
-
+    print(f"Selected planner: {result['planner_type']}")
+    print(f"LangGraph mermaid path: {result['graph_mermaid_path']}")
+    print(f"LangGraph image path: {result['graph_image_path']}")
+    if result["tree_spec"] is not None:
+        print("Structured behavior tree:")
+        print(result["tree_spec"].model_dump_json(indent=2))
+    print(f"Compile success: {result['compiled_tree'] is not None}")
+    print(f"Tree image path: {result['tree_image_path']}")
+    print(f"Execution result: {result['execution_status']}")
+    if result["error_message"]:
+        print(f"Error: {result['error_message']}")
+        raise SystemExit(1)
     print(f"Final world state: {world_state}")
 
 
