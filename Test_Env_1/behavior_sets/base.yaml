@@ -1,0 +1,25 @@
+{
+  "name": "base",
+  "leaf_behaviors": [
+    {
+      "type": "detect_object",
+      "description": "Action leaf that marks the target object as visible.",
+      "runtime_class": "agentic.bt_runtime.leaf_behaviors.DetectObjectBehaviour"
+    },
+    {
+      "type": "pick_object",
+      "description": "Action leaf that picks up a visible object. Optional params: target.",
+      "runtime_class": "agentic.bt_runtime.leaf_behaviors.PickObjectBehaviour"
+    },
+    {
+      "type": "object_visible",
+      "description": "Condition leaf that succeeds when an object is visible.",
+      "runtime_class": "agentic.bt_runtime.leaf_behaviors.ObjectVisibleBehaviour"
+    },
+    {
+      "type": "holding_object",
+      "description": "Condition leaf that succeeds when the robot holds an object.",
+      "runtime_class": "agentic.bt_runtime.leaf_behaviors.HoldingObjectBehaviour"
+    }
+  ]
+}

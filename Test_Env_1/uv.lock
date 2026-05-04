@@ -11,6 +11,7 @@ dependencies = [
     { name = "openai" },
     { name = "py-trees" },
     { name = "pydantic" },
+    { name = "pyyaml" },
 ]
 
 [package.metadata]
@@ -19,6 +20,7 @@ requires-dist = [
     { name = "openai" },
     { name = "py-trees" },
     { name = "pydantic", specifier = ">=2,<3" },
+    { name = "pyyaml" },
 ]
 
 [[package]]

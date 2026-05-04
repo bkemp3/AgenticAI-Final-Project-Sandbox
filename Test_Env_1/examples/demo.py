@@ -17,6 +17,11 @@ def parse_args() -> argparse.Namespace:
         default="rule_based",
         help="Select which planner implementation to use.",
     )
+    parser.add_argument(
+        "--behaviors",
+        default=None,
+        help="Path to behavior-set YAML/JSON file. Defaults to behavior_sets/base.yaml.",
+    )
     return parser.parse_args()
 
 
@@ -28,7 +33,11 @@ def main() -> None:
         holding_object=False,
         target_object="cube",
     )
-    agent = Agent(world_state, planner_type=args.planner)
+    agent = Agent(
+        world_state,
+        planner_type=args.planner,
+        behavior_set_path=args.behaviors,
+    )
     result = agent.run("pickup_object")
 
     print("Architecture: goal -> planner -> structured tree -> compiler -> py_trees runtime -> execution")

@@ -53,8 +53,23 @@ Explicit rule-based planner:
 uv run examples/demo.py --planner rule_based
 ```
 
+Rule-based planner with explicit behavior set:
+
+```bash
+uv run examples/demo.py --planner rule_based --behaviors behavior_sets/base.yaml
+```
+
 LLM planner:
 
 ```bash
 uv run examples/demo.py --planner llm
 ```
+
+## Behavior Sets
+
+- Behavior sets are configured via YAML files under `behavior_sets/` (JSON also supported).
+- The default set is `behavior_sets/base.yaml`.
+- Each run can select a behavior set using `--behaviors <path>`.
+- Behavior sets define:
+  - Allowed leaf/condition node types for planning
+  - Runtime class mappings used for compilation/execution

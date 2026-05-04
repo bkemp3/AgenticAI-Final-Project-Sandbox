@@ -4,6 +4,7 @@ import os
 
 from openai import OpenAI
 
+from agentic.behaviors.catalog import BehaviorCatalog
 from agentic.bt_spec.tree_structure import BehaviorTreeStructure
 from agentic.planning.base import BasePlanner, PlannerError
 from agentic.planning.prompting import build_system_prompt, build_user_prompt
@@ -14,9 +15,11 @@ class LLMPlanner(BasePlanner):
 
     def __init__(
         self,
+        behavior_catalog: BehaviorCatalog,
         model: str = "gpt-4o-mini",
         client: OpenAI | None = None,
     ) -> None:
+        self.behavior_catalog = behavior_catalog
         self.model = model
         self.client = client
 
@@ -42,8 +45,8 @@ class LLMPlanner(BasePlanner):
             completion = client.beta.chat.completions.parse(
                 model=self.model,
                 messages=[
-                    {"role": "system", "content": build_system_prompt()},
-                    {"role": "user", "content": build_user_prompt(goal)},
+                    {"role": "system", "content": build_system_prompt(self.behavior_catalog)},
+                    {"role": "user", "content": build_user_prompt(goal, self.behavior_catalog)},
                 ],
                 response_format=BehaviorTreeStructure,
             )

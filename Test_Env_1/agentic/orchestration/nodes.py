@@ -15,9 +15,9 @@ def select_planner(state: OrchestrationState) -> dict[str, object]:
 
     planner_type = _normalize_planner_type(state["planner_type"])
     if planner_type == "llm":
-        planner = LLMPlanner()
+        planner = LLMPlanner(behavior_catalog=state["behavior_catalog"])
     else:
-        planner = RuleBasedPlanner()
+        planner = RuleBasedPlanner(behavior_catalog=state["behavior_catalog"])
     return {"planner": planner, "planner_type": planner_type}
 
 
@@ -41,7 +41,11 @@ def compile_tree(state: OrchestrationState) -> dict[str, object]:
         tree_spec = state["tree_spec"]
         if tree_spec is None:
             raise ValueError("No behavior tree structure is available to compile.")
-        compiled_tree = compile_behavior_tree(tree_spec, state["world_state"])
+        compiled_tree = compile_behavior_tree(
+            tree_spec,
+            state["world_state"],
+            state["behavior_catalog"].runtime_registry(),
+        )
         return {"compiled_tree": compiled_tree}
     except Exception as exc:
         return _error_update(f"Tree compilation failed: {exc}")

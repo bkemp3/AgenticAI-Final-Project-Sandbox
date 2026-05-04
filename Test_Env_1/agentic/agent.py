@@ -1,3 +1,4 @@
+from agentic.behaviors.catalog import load_behavior_catalog
 from agentic.orchestration.graph import build_orchestration_app
 from agentic.orchestration.state import OrchestrationState
 from agentic.orchestration.visualization import export_langgraph_visualization
@@ -11,9 +12,11 @@ class Agent:
         self,
         world_state: WorldState,
         planner_type: str = "rule_based",
+        behavior_set_path: str | None = None,
     ) -> None:
         self.world_state = world_state
         self.planner_type = planner_type
+        self.behavior_catalog = load_behavior_catalog(behavior_set_path)
         self.app = build_orchestration_app()
 
     def run(self, goal: str) -> OrchestrationState:
@@ -27,6 +30,7 @@ class Agent:
             "goal": goal,
             "planner_type": self.planner_type,
             "world_state": self.world_state,
+            "behavior_catalog": self.behavior_catalog,
             "planner": None,
             "tree_spec": None,
             "compiled_tree": None,

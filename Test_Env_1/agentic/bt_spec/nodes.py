@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field
 
@@ -21,38 +21,17 @@ class SelectorNode(BTNodeModel):
     children: list["BehaviorTreeNode"] = Field(min_length=1)
 
 
-class DetectObjectNode(BTNodeModel):
-    """Leaf node for detecting an object in the environment."""
+class LeafNode(BTNodeModel):
+    """Dynamic leaf or condition node resolved by runtime behavior registry."""
 
-    type: Literal["detect_object"]
-
-
-class PickObjectNode(BTNodeModel):
-    """Leaf node for picking up an object."""
-
-    type: Literal["pick_object"]
-    target: str | None = None
-
-
-class ObjectVisibleNode(BTNodeModel):
-    """Condition node that checks whether an object is visible."""
-
-    type: Literal["object_visible"]
-
-
-class HoldingObjectNode(BTNodeModel):
-    """Condition node that checks whether the robot holds an object."""
-
-    type: Literal["holding_object"]
+    type: str
+    params: dict[str, Any] = Field(default_factory=dict)
 
 
 BehaviorTreeNode = (
     SequenceNode
     | SelectorNode
-    | DetectObjectNode
-    | PickObjectNode
-    | ObjectVisibleNode
-    | HoldingObjectNode
+    | LeafNode
 )
 
 SequenceNode.model_rebuild()
