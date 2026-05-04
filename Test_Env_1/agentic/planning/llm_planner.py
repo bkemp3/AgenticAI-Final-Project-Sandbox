@@ -16,7 +16,7 @@ class LLMPlanner(BasePlanner):
     def __init__(
         self,
         behavior_catalog: BehaviorCatalog,
-        model: str = "gpt-4o-mini",
+        model: str = "gpt-4.1-mini",
         client: OpenAI | None = None,
     ) -> None:
         self.behavior_catalog = behavior_catalog

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from pydantic import Field
 
@@ -21,11 +21,18 @@ class SelectorNode(BTNodeModel):
     children: list["BehaviorTreeNode"] = Field(min_length=1)
 
 
+class ParamEntry(BTNodeModel):
+    """Strict parameter entry for LLM structured output compatibility."""
+
+    key: str
+    value: str | int | float | bool | None
+
+
 class LeafNode(BTNodeModel):
     """Dynamic leaf or condition node resolved by runtime behavior registry."""
 
     type: str
-    params: dict[str, Any] = Field(default_factory=dict)
+    params: list[ParamEntry] = Field(default_factory=list)
 
 
 BehaviorTreeNode = (

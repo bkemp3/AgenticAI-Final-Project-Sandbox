@@ -3,9 +3,15 @@ ordering=out;
 graph [fontname="times-roman"];
 node [fontname="times-roman"];
 edge [fontname="times-roman"];
-pickup_sequence [label="pickup_sequence", shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
+Sequence [label=Sequence, shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
+Selector [label=Selector, shape=octagon, style=filled, fillcolor=cyan, fontsize=9, fontcolor=black];
+Sequence -> Selector;
+ObjectVisible [label=ObjectVisible, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Selector -> ObjectVisible;
 DetectObject [label=DetectObject, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
-pickup_sequence -> DetectObject;
+Selector -> DetectObject;
 PickObject [label=PickObject, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
-pickup_sequence -> PickObject;
+Sequence -> PickObject;
+HoldingObject [label=HoldingObject, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+Sequence -> HoldingObject;
 }

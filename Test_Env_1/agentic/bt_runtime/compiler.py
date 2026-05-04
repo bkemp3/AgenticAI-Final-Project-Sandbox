@@ -49,7 +49,7 @@ def _compile_node(
         if behaviour_class is None:
             raise ValueError(f"No runtime behaviour registered for node type: {node.type}")
         kwargs = {"world_state": world_state, "name": node.name or _default_name(node.type)}
-        kwargs.update(node.params)
+        kwargs.update({entry.key: entry.value for entry in node.params})
         return behaviour_class(**kwargs)
 
     raise ValueError(f"Unsupported schema node type: {node.type}")
