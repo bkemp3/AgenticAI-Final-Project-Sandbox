@@ -55,8 +55,8 @@ class WorldEvent:
 class VisibleObject:
     object_id: str
     position: GridPosition
-    weight: float
-    value: float
+    weight: float | None = None
+    value: float | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -66,14 +66,20 @@ class CollectionObservation:
     collected_weight: float
     collected_value: float
     time_remaining: int
+    visibility_radius: int | None
     visible_objects: tuple[VisibleObject, ...]
 
 
 @dataclass(frozen=True, slots=True)
 class CollectionMetrics:
-    total_weight: float
-    total_value: float
     success: bool
-    failed_pickups: int
-    objects_lost_to_other_agents: int
+    total_weight_collected: float
+    total_value_collected: float
     timesteps_used: int
+    failed_pickups: int
+    successful_pickups: int
+    deposits: int
+    objects_lost_to_other_agents: int
+    invalid_actions: int
+    final_inventory_weight: float
+    final_inventory_value: float

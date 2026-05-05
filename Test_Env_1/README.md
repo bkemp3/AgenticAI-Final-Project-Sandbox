@@ -71,6 +71,8 @@ Timed value-collection simulator demo:
 python3 examples/collection_sim_demo.py
 ```
 
+This demo loads the YAML environment, advances the simulator by one timestep, shows partial observations, runs a short scripted collection sequence, and prints the resulting event log and final metrics.
+
 ## Behavior Sets
 
 - Behavior sets are configured via YAML files under `behavior_sets/` (JSON also supported).

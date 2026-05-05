@@ -27,7 +27,13 @@ def main() -> None:
     world = CollectionWorld(config=config, objects=objects)
 
     print(f"Loaded config from: {args.config}")
-    print(f"Initial observation: {world.get_observation()}")
+    print(f"Config: {config}")
+    print("Initial partial observation (radius=1, hidden object details):")
+    print(world.get_observation(visibility_radius=1, include_object_details=False))
+
+    print("Advancing the world by one timestep without an action:")
+    world.step()
+    print(world.get_observation(visibility_radius=1, include_object_details=False))
 
     actions = [
         ("move", (1, 0)),
@@ -54,8 +60,10 @@ def main() -> None:
         else:
             raise ValueError(f"Unsupported action: {action}")
         print(f"Action {action}({payload}) -> {result}")
+        print(f"Observation: {world.get_observation(visibility_radius=1, include_object_details=False)}")
 
-    print(f"Final observation: {world.get_observation()}")
+    print("Final full observation:")
+    print(world.get_observation())
     print(f"Final metrics: {world.get_metrics()}")
     print("Event log:")
     for event in world.events:

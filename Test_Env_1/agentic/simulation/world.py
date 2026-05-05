@@ -28,7 +28,10 @@ class CollectionWorld:
         self._validate_config(config)
         self._rng = random.Random(config.seed)
         self._failed_pickups = 0
+        self._successful_pickups = 0
+        self._deposits = 0
         self._objects_lost_to_other_agents = 0
+        self._invalid_actions = 0
         robot_position = robot_start if robot_start is not None else config.dropoff_location
         self._validate_position(robot_position, config.grid_size, field_name="robot_start")
 
@@ -50,6 +53,16 @@ class CollectionWorld:
         if self.is_terminal():
             self._log_invalid_action("step", reason="world is already terminal")
             return
+        self.events.append(
+            WorldEvent(
+                timestep=self.state.timestep,
+                event_type="step",
+                details={
+                    "robot_position": self.state.robot.position,
+                    "held_object_id": self.state.robot.holding_object_id,
+                },
+            )
+        )
         self._advance_time()
 
     def simulate_other_agents(self) -> int:
@@ -79,7 +92,11 @@ class CollectionWorld:
             WorldEvent(
                 timestep=self.state.timestep,
                 event_type="move",
-                details={"from": previous_position, "to": new_position},
+                details={
+                    "from": previous_position,
+                    "to": new_position,
+                    "held_object_id": self.state.robot.holding_object_id,
+                },
             )
         )
         self._advance_time()
@@ -127,7 +144,11 @@ class CollectionWorld:
                     timestep=self.state.timestep,
                     event_type="pickup_failed",
                     object_id=object_id,
-                    details={"pickup_failure_prob": target.pickup_failure_prob},
+                    details={
+                        "pickup_failure_prob": target.pickup_failure_prob,
+                        "robot_position": self.state.robot.position,
+                        "object_position": target.position,
+                    },
                 )
             )
             self._advance_time()
@@ -136,12 +157,18 @@ class CollectionWorld:
         target.available = False
         target.collected_by = "robot"
         self.state.robot.holding_object_id = object_id
+        self._successful_pickups += 1
         self.events.append(
             WorldEvent(
                 timestep=self.state.timestep,
                 event_type="pickup_success",
                 object_id=object_id,
-                details={"weight": target.weight, "value": target.value},
+                details={
+                    "weight": target.weight,
+                    "value": target.value,
+                    "robot_position": self.state.robot.position,
+                    "object_position": target.position,
+                },
             )
         )
         self._advance_time()
@@ -170,6 +197,7 @@ class CollectionWorld:
         self.state.robot.inventory_weight += held_object.weight
         self.state.robot.inventory_value += held_object.value
         self.state.robot.holding_object_id = None
+        self._deposits += 1
         self.events.append(
             WorldEvent(
                 timestep=self.state.timestep,
@@ -178,6 +206,7 @@ class CollectionWorld:
                 details={
                     "weight": held_object.weight,
                     "value": held_object.value,
+                    "dropoff_location": self.state.config.dropoff_location,
                     "inventory_weight": self.state.robot.inventory_weight,
                     "inventory_value": self.state.robot.inventory_value,
                 },
@@ -192,16 +221,22 @@ class CollectionWorld:
     def is_terminal(self) -> bool:
         return self.goal_met() or self.state.timestep >= self.state.config.max_timesteps
 
-    def get_observation(self) -> CollectionObservation:
+    def get_observation(
+        self,
+        visibility_radius: int | None = None,
+        include_object_details: bool = True,
+    ) -> CollectionObservation:
+        if visibility_radius is not None and visibility_radius < 0:
+            raise ValueError("visibility_radius cannot be negative.")
         visible_objects = tuple(
             VisibleObject(
                 object_id=obj.object_id,
                 position=obj.position,
-                weight=obj.weight,
-                value=obj.value,
+                weight=obj.weight if include_object_details else None,
+                value=obj.value if include_object_details else None,
             )
             for obj in sorted(self.state.objects.values(), key=lambda item: item.object_id)
-            if obj.available
+            if obj.available and self._is_visible(obj.position, visibility_radius)
         )
         return CollectionObservation(
             robot_position=self.state.robot.position,
@@ -209,17 +244,23 @@ class CollectionWorld:
             collected_weight=self.state.robot.inventory_weight,
             collected_value=self.state.robot.inventory_value,
             time_remaining=max(self.state.config.max_timesteps - self.state.timestep, 0),
+            visibility_radius=visibility_radius,
             visible_objects=visible_objects,
         )
 
     def get_metrics(self) -> CollectionMetrics:
         return CollectionMetrics(
-            total_weight=self.state.robot.inventory_weight,
-            total_value=self.state.robot.inventory_value,
             success=self.goal_met() and self.state.timestep <= self.state.config.max_timesteps,
-            failed_pickups=self._failed_pickups,
-            objects_lost_to_other_agents=self._objects_lost_to_other_agents,
+            total_weight_collected=self.state.robot.inventory_weight,
+            total_value_collected=self.state.robot.inventory_value,
             timesteps_used=self.state.timestep,
+            failed_pickups=self._failed_pickups,
+            successful_pickups=self._successful_pickups,
+            deposits=self._deposits,
+            objects_lost_to_other_agents=self._objects_lost_to_other_agents,
+            invalid_actions=self._invalid_actions,
+            final_inventory_weight=self.state.robot.inventory_weight,
+            final_inventory_value=self.state.robot.inventory_value,
         )
 
     def _advance_time(self) -> None:
@@ -242,7 +283,10 @@ class CollectionWorld:
                     timestep=self.state.timestep,
                     event_type="object_disappeared",
                     object_id=obj.object_id,
-                    details={"position": obj.position},
+                    details={
+                        "position": obj.position,
+                        "disappear_prob": self.state.config.disappear_prob,
+                    },
                 )
             )
         return disappeared_count
@@ -253,12 +297,18 @@ class CollectionWorld:
         object_id: str | None = None,
         **details: object,
     ) -> None:
+        self._invalid_actions += 1
         self.events.append(
             WorldEvent(
                 timestep=self.state.timestep,
                 event_type="invalid_action",
                 object_id=object_id,
-                details={"action": action, **details},
+                details={
+                    "action": action,
+                    "robot_position": self.state.robot.position,
+                    "held_object_id": self.state.robot.holding_object_id,
+                    **details,
+                },
             )
         )
 
@@ -266,6 +316,11 @@ class CollectionWorld:
         width, height = self.state.config.grid_size
         x, y = position
         return 0 <= x < width and 0 <= y < height
+
+    def _is_visible(self, position: GridPosition, visibility_radius: int | None) -> bool:
+        if visibility_radius is None:
+            return True
+        return self._manhattan_distance(self.state.robot.position, position) <= visibility_radius
 
     @staticmethod
     def _manhattan_distance(start: GridPosition, end: GridPosition) -> int:
