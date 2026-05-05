@@ -1,0 +1,193 @@
+{
+  "id": null,
+  "name": null,
+  "root": {
+    "id": null,
+    "name": null,
+    "type": "sequence",
+    "children": [
+      {
+        "id": null,
+        "name": null,
+        "type": "sense_collection_world",
+        "params": [
+          {
+            "id": null,
+            "name": null,
+            "key": "visibility_radius",
+            "value": null
+          },
+          {
+            "id": null,
+            "name": null,
+            "key": "include_object_details",
+            "value": true
+          }
+        ]
+      },
+      {
+        "id": null,
+        "name": null,
+        "type": "selector",
+        "children": [
+          {
+            "id": null,
+            "name": null,
+            "type": "collection_value_goal_met",
+            "params": [
+              {
+                "id": null,
+                "name": null,
+                "key": "target_value",
+                "value": 19
+              }
+            ]
+          },
+          {
+            "id": null,
+            "name": null,
+            "type": "sequence",
+            "children": [
+              {
+                "id": null,
+                "name": null,
+                "type": "holding_object",
+                "params": []
+              },
+              {
+                "id": null,
+                "name": null,
+                "type": "selector",
+                "children": [
+                  {
+                    "id": null,
+                    "name": null,
+                    "type": "sequence",
+                    "children": [
+                      {
+                        "id": null,
+                        "name": null,
+                        "type": "navigate_to_dropoff",
+                        "params": []
+                      },
+                      {
+                        "id": null,
+                        "name": null,
+                        "type": "deposit_held_object",
+                        "params": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": null,
+                    "name": null,
+                    "type": "navigate_to_dropoff",
+                    "params": []
+                  }
+                ]
+              },
+              {
+                "id": null,
+                "name": null,
+                "type": "selector",
+                "children": [
+                  {
+                    "id": null,
+                    "name": null,
+                    "type": "carry_capacity_available",
+                    "params": []
+                  },
+                  {
+                    "id": null,
+                    "name": null,
+                    "type": "holding_object",
+                    "params": []
+                  }
+                ]
+              },
+              {
+                "id": null,
+                "name": null,
+                "type": "sense_collection_world",
+                "params": [
+                  {
+                    "id": null,
+                    "name": null,
+                    "key": "visibility_radius",
+                    "value": null
+                  },
+                  {
+                    "id": null,
+                    "name": null,
+                    "key": "include_object_details",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "id": null,
+                "name": null,
+                "type": "selector",
+                "children": [
+                  {
+                    "id": null,
+                    "name": null,
+                    "type": "sequence",
+                    "children": [
+                      {
+                        "id": null,
+                        "name": null,
+                        "type": "select_best_material",
+                        "params": [
+                          {
+                            "id": null,
+                            "name": null,
+                            "key": "strategy",
+                            "value": "value_per_weight"
+                          }
+                        ]
+                      },
+                      {
+                        "id": null,
+                        "name": null,
+                        "type": "object_still_available",
+                        "params": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": null,
+                    "name": null,
+                    "type": "replan_collection_target",
+                    "params": []
+                  }
+                ]
+              },
+              {
+                "id": null,
+                "name": null,
+                "type": "selector",
+                "children": [
+                  {
+                    "id": null,
+                    "name": null,
+                    "type": "navigate_to_selected_object",
+                    "params": []
+                  },
+                  {
+                    "id": null,
+                    "name": null,
+                    "type": "attempt_pickup_selected_object",
+                    "params": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "goal": "maximize_collection_value",
+  "description": "Plan to maximize collected value before timeout by sensing world, selecting best fitting materials by value-density, navigating and picking up them, handling stochastic failures by replanning, depositing held object at dropoff, and repeating until goal met or time runs out."
+}

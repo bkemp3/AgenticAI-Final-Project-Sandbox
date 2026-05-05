@@ -1,0 +1,17 @@
+Goal: maximize_collection_value
+
+Build a BehaviorTreeStructure using only the allowed node types:
+sequence, selector, sense_collection_world, collection_value_goal_met, time_remaining, select_best_material, navigate_to_selected_object, object_still_available, attempt_pickup_selected_object, holding_object, carry_capacity_available, navigate_to_dropoff, deposit_held_object, replan_collection_target
+
+Task instruction:
+Maximize total collected value before timeout while respecting carry capacity, only acting through visible objects and depositing held objects at the dropoff.
+
+High-level environment summary:
+- grid_size: (5, 5)
+- target_value: 19.0
+- carry_capacity: 4.0
+- max_timesteps: 12
+- dropoff_location: (0, 0)
+- hidden state remains unknown to the planner
+- objects may disappear and pickup can fail stochastically
+- deposited value is what counts toward success

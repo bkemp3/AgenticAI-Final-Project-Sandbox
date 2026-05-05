@@ -18,36 +18,66 @@ class LLMPlanner(BasePlanner):
         behavior_catalog: BehaviorCatalog,
         model: str = "gpt-4.1-mini",
         client: OpenAI | None = None,
+        system_prompt_override: str | None = None,
+        user_prompt_override: str | None = None,
+        retry_limit: int = 0,
     ) -> None:
         self.behavior_catalog = behavior_catalog
         self.model = model
         self.client = client
+        self.system_prompt_override = system_prompt_override
+        self.user_prompt_override = user_prompt_override
+        self.retry_limit = retry_limit
 
     def create_plan(self, goal: str) -> BehaviorTreeStructure:
-        message = self._request_plan(goal)
-        parsed = getattr(message, "parsed", None)
-        refusal = getattr(message, "refusal", None)
+        messages = [
+            {
+                "role": "system",
+                "content": self.system_prompt_override or build_system_prompt(self.behavior_catalog),
+            },
+            {
+                "role": "user",
+                "content": self.user_prompt_override or build_user_prompt(goal, self.behavior_catalog),
+            },
+        ]
+        last_error: str | None = None
 
-        if refusal:
-            raise PlannerError(f"LLM planner refused the request: {refusal}")
-        if parsed is None:
-            raise PlannerError("LLM planner did not return parsable structured output.")
+        for attempt in range(self.retry_limit + 1):
+            message = self._request_plan(messages)
+            parsed = getattr(message, "parsed", None)
+            refusal = getattr(message, "refusal", None)
 
-        try:
-            return BehaviorTreeStructure.model_validate(parsed.model_dump())
-        except Exception as exc:
-            raise PlannerError(f"LLM planner returned invalid plan data: {exc}") from exc
+            if refusal:
+                raise PlannerError(f"LLM planner refused the request: {refusal}")
+            if parsed is None:
+                last_error = "LLM planner did not return parsable structured output."
+            else:
+                try:
+                    return BehaviorTreeStructure.model_validate(parsed.model_dump())
+                except Exception as exc:
+                    last_error = f"LLM planner returned invalid plan data: {exc}"
 
-    def _request_plan(self, goal: str):
+            if attempt < self.retry_limit:
+                messages.append(
+                    {
+                        "role": "user",
+                        "content": (
+                            "The previous behavior tree was invalid. "
+                            f"Validation error: {last_error}. "
+                            "Return a corrected BehaviorTreeStructure using only the allowed node types and params."
+                        ),
+                    }
+                )
+
+        raise PlannerError(last_error or "LLM planner failed without a specific error.")
+
+    def _request_plan(self, messages: list[dict[str, str]]):
         client = self._get_client()
 
         try:
             completion = client.beta.chat.completions.parse(
                 model=self.model,
-                messages=[
-                    {"role": "system", "content": build_system_prompt(self.behavior_catalog)},
-                    {"role": "user", "content": build_user_prompt(goal, self.behavior_catalog)},
-                ],
+                messages=messages,
                 response_format=BehaviorTreeStructure,
             )
         except Exception as exc:

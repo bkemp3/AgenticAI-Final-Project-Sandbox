@@ -1,0 +1,13 @@
+{
+  "success": false,
+  "total_weight_collected": 0.0,
+  "total_value_collected": 0.0,
+  "timesteps_used": 0,
+  "failed_pickups": 0,
+  "successful_pickups": 0,
+  "deposits": 0,
+  "objects_lost_to_other_agents": 0,
+  "invalid_actions": 0,
+  "final_inventory_weight": 0.0,
+  "final_inventory_value": 0.0
+}

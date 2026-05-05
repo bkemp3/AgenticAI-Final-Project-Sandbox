@@ -7,5 +7,7 @@ task_prompt: >-
   Maximize total collected value before timeout while respecting carry capacity,
   only acting through visible objects and depositing held objects at the dropoff.
 system_prompt_path: ../prompts/collection_planner_system.txt
+user_prompt_include_environment_summary: true
 max_tree_ticks: 12
+retry_limit: 1
 output_dir: ../outputs/collection_llm_runs

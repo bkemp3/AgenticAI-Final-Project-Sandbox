@@ -7,7 +7,7 @@ import yaml
 
 
 @dataclass(frozen=True)
-class LLMCollectionRunConfig:
+class LLMTaskRunConfig:
     planner_type: str
     model: str
     environment_config_path: str
@@ -15,7 +15,9 @@ class LLMCollectionRunConfig:
     goal: str
     task_prompt: str
     system_prompt_path: str
+    user_prompt_include_environment_summary: bool
     max_tree_ticks: int
+    retry_limit: int
     output_dir: str
 
 
@@ -23,12 +25,12 @@ class RunConfigError(ValueError):
     """Raised when an LLM collection run config is invalid."""
 
 
-def load_llm_collection_run_config(path: str) -> LLMCollectionRunConfig:
+def load_llm_task_run_config(path: str) -> LLMTaskRunConfig:
     config_path = Path(path).expanduser().resolve()
     with config_path.open("r", encoding="utf-8") as handle:
         raw = yaml.safe_load(handle) or {}
 
-    return LLMCollectionRunConfig(
+    return LLMTaskRunConfig(
         planner_type=str(_require(raw, "planner_type")),
         model=str(_require(raw, "model")),
         environment_config_path=_resolve_path(config_path, _require(raw, "environment_config_path")),
@@ -36,7 +38,9 @@ def load_llm_collection_run_config(path: str) -> LLMCollectionRunConfig:
         goal=str(_require(raw, "goal")),
         task_prompt=str(_require(raw, "task_prompt")),
         system_prompt_path=_resolve_path(config_path, _require(raw, "system_prompt_path")),
+        user_prompt_include_environment_summary=bool(raw.get("user_prompt_include_environment_summary", True)),
         max_tree_ticks=int(_require(raw, "max_tree_ticks")),
+        retry_limit=int(raw.get("retry_limit", 1)),
         output_dir=_resolve_path(config_path, _require(raw, "output_dir")),
     )
 
