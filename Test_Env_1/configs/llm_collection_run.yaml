@@ -1,5 +1,5 @@
 planner_type: llm
-model: gpt-5.4
+model: gpt-5.4-mini
 task_adapter: agentic.tasks.collection.adapter
 environment_config_path: collection_env.yaml
 behavior_set_path: ../behavior_sets/collection.yaml

@@ -1,13 +1,13 @@
 {
-  "success": true,
-  "total_weight_collected": 5.0,
-  "total_value_collected": 19.0,
-  "timesteps_used": 10,
+  "success": false,
+  "total_weight_collected": 0.0,
+  "total_value_collected": 0.0,
+  "timesteps_used": 12,
   "failed_pickups": 0,
-  "successful_pickups": 2,
-  "deposits": 2,
+  "successful_pickups": 1,
+  "deposits": 0,
   "objects_lost_to_other_agents": 0,
-  "invalid_actions": 0,
-  "final_inventory_weight": 5.0,
-  "final_inventory_value": 19.0
+  "invalid_actions": 6,
+  "final_inventory_weight": 0.0,
+  "final_inventory_value": 0.0
 }

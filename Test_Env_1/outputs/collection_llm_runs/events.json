@@ -34,7 +34,7 @@
   {
     "timestep": 2,
     "event_type": "pickup_success",
-    "object_id": "silver_cylinder",
+    "object_id": "silver_cylinder_0",
     "details": {
       "weight": 2.0,
       "value": 11.0,
@@ -61,7 +61,7 @@
         1,
         0
       ],
-      "held_object_id": "silver_cylinder"
+      "held_object_id": "silver_cylinder_0"
     }
   },
   {
@@ -74,89 +74,110 @@
         0
       ],
       "to": [
-        0,
+        2,
         0
       ],
-      "held_object_id": "silver_cylinder"
+      "held_object_id": "silver_cylinder_0"
     }
   },
   {
     "timestep": 5,
-    "event_type": "deposit",
-    "object_id": "silver_cylinder",
+    "event_type": "move",
+    "object_id": null,
     "details": {
-      "weight": 2.0,
-      "value": 11.0,
-      "dropoff_location": [
-        0,
+      "from": [
+        2,
         0
       ],
-      "inventory_weight": 2.0,
-      "inventory_value": 11.0
+      "to": [
+        3,
+        0
+      ],
+      "held_object_id": "silver_cylinder_0"
     }
   },
   {
     "timestep": 6,
-    "event_type": "move",
-    "object_id": null,
+    "event_type": "invalid_action",
+    "object_id": "silver_cylinder_1",
     "details": {
-      "from": [
-        0,
+      "action": "attempt_pickup",
+      "robot_position": [
+        3,
         0
       ],
-      "to": [
-        1,
-        0
-      ],
-      "held_object_id": null
+      "held_object_id": "silver_cylinder_0",
+      "reason": "robot is already holding an object"
     }
   },
   {
     "timestep": 7,
-    "event_type": "pickup_success",
-    "object_id": "bronze_cube",
+    "event_type": "invalid_action",
+    "object_id": "silver_cylinder_1",
     "details": {
-      "weight": 3.0,
-      "value": 8.0,
+      "action": "attempt_pickup",
       "robot_position": [
-        1,
+        3,
         0
       ],
-      "object_position": [
-        1,
-        0
-      ]
+      "held_object_id": "silver_cylinder_0",
+      "reason": "robot is already holding an object"
     }
   },
   {
     "timestep": 8,
-    "event_type": "move",
-    "object_id": null,
+    "event_type": "invalid_action",
+    "object_id": "silver_cylinder_1",
     "details": {
-      "from": [
-        1,
+      "action": "attempt_pickup",
+      "robot_position": [
+        3,
         0
       ],
-      "to": [
-        0,
-        0
-      ],
-      "held_object_id": "bronze_cube"
+      "held_object_id": "silver_cylinder_0",
+      "reason": "robot is already holding an object"
     }
   },
   {
     "timestep": 9,
-    "event_type": "deposit",
-    "object_id": "bronze_cube",
+    "event_type": "invalid_action",
+    "object_id": "silver_cylinder_1",
     "details": {
-      "weight": 3.0,
-      "value": 8.0,
-      "dropoff_location": [
-        0,
+      "action": "attempt_pickup",
+      "robot_position": [
+        3,
         0
       ],
-      "inventory_weight": 5.0,
-      "inventory_value": 19.0
+      "held_object_id": "silver_cylinder_0",
+      "reason": "robot is already holding an object"
+    }
+  },
+  {
+    "timestep": 10,
+    "event_type": "invalid_action",
+    "object_id": "silver_cylinder_1",
+    "details": {
+      "action": "attempt_pickup",
+      "robot_position": [
+        3,
+        0
+      ],
+      "held_object_id": "silver_cylinder_0",
+      "reason": "robot is already holding an object"
+    }
+  },
+  {
+    "timestep": 11,
+    "event_type": "invalid_action",
+    "object_id": "silver_cylinder_1",
+    "details": {
+      "action": "attempt_pickup",
+      "robot_position": [
+        3,
+        0
+      ],
+      "held_object_id": "silver_cylinder_0",
+      "reason": "robot is already holding an object"
     }
   }
 ]

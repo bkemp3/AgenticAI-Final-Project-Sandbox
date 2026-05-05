@@ -8,13 +8,23 @@ disappear_prob: 0.0
 default_pickup_failure_prob: 0.15
 seed: 7
 objects:
-  - object_id: bronze_cube
+  - object_id: bronze_cube_0
     position: [1, 0]
     weight: 3
     value: 8
     pickup_failure_prob: 0.0
-  - object_id: silver_cylinder
+  - object_id: bronze_cube_1
+    position: [1, 1]
+    weight: 3
+    value: 8
+    pickup_failure_prob: 0.0
+  - object_id: silver_cylinder_0
     position: [2, 0]
+    weight: 2
+    value: 11
+    pickup_failure_prob: 0.0
+  - object_id: silver_cylinder_1
+    position: [3, 0]
     weight: 2
     value: 11
     pickup_failure_prob: 0.0
