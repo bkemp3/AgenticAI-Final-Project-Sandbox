@@ -1,33 +1,28 @@
-from textwrap import dedent
+from pathlib import Path
 
 from agentic.behaviors.catalog import BehaviorCatalog
 
+
+PROMPTS_DIR = Path(__file__).resolve().parents[2] / "prompts"
+SYSTEM_PROMPT_PATH = PROMPTS_DIR / "planner_system_base.txt"
+USER_PROMPT_PATH = PROMPTS_DIR / "planner_user_base.txt"
+
+
 def build_system_prompt(catalog: BehaviorCatalog) -> str:
-    """Build the compact planner instructions for the LLM."""
+    """Build the planner system prompt from prompt assets plus behavior metadata."""
 
     leaf_rules = "\n".join(_format_behavior_rule(behavior) for behavior in catalog.leaf_behaviors)
     allowed_types = ", ".join(catalog.allowed_node_types)
-    return dedent(
-        f"""
-        You are a behavior tree planner.
-        Return a valid BehaviorTreeStructure for the given goal.
-        You may only use these node types: {allowed_types}.
-
-        Node rules:
-        - sequence: composite, requires one or more children
-        - selector: composite, requires one or more children
-        {leaf_rules}
-
-        Constraints:
-        - Do not invent new node types or extra fields.
-        - Composite nodes must have children.
-        - Leaf and condition nodes must not have children.
-        - Leaf and condition nodes may optionally include params as a list of entries:
-          each entry has key (string) and value (string | number | boolean | null).
-        - Return a concise plan that matches the goal.
-        - Do not generate code.
-        """
-    ).strip()
+    base = _load_prompt_asset(SYSTEM_PROMPT_PATH)
+    behavior_block = "\n".join(
+        [
+            f"You may only use these node types: {allowed_types}.",
+            "",
+            "Available leaf/condition nodes:",
+            leaf_rules,
+        ]
+    )
+    return "\n\n".join([base, behavior_block]).strip()
 
 
 def _format_behavior_rule(behavior) -> str:
@@ -39,14 +34,14 @@ def _format_behavior_rule(behavior) -> str:
 
 
 def build_user_prompt(goal: str, catalog: BehaviorCatalog) -> str:
-    """Build the user prompt for a specific planning request."""
+    """Build the planner user prompt from prompt assets."""
 
     allowed_types = ", ".join(catalog.allowed_node_types)
-    return dedent(
-        f"""
-        Goal: {goal}
-
-        Build a BehaviorTreeStructure using only the allowed node types:
-        {allowed_types}
-        """
+    return _load_prompt_asset(USER_PROMPT_PATH).format(
+        goal=goal,
+        allowed_types=allowed_types,
     ).strip()
+
+
+def _load_prompt_asset(path: Path) -> str:
+    return path.read_text(encoding="utf-8").strip()

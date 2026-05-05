@@ -1,0 +1,4 @@
+Goal: {goal}
+
+Build a BehaviorTreeStructure using only the allowed node types:
+{allowed_types}
