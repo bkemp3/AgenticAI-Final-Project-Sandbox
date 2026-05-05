@@ -15,7 +15,13 @@ class TaskAdapterProtocol(Protocol):
 
     def describe_tick(self, world: object, tree: py_trees.trees.BehaviourTree, tick: int) -> str: ...
 
-    def render_tick(self, world: object, tree: py_trees.trees.BehaviourTree, tick: int) -> str | None: ...
+    def render_tick(
+        self,
+        world: object,
+        tree: py_trees.trees.BehaviourTree,
+        tick: int,
+        tree_generation: int,
+    ) -> str | None: ...
 
     def get_visible_observation(self, world: object, tree: py_trees.trees.BehaviourTree) -> object | None: ...
 

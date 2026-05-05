@@ -22,6 +22,7 @@ def execute_tree_batch(
     *,
     max_ticks: int,
     start_tick: int,
+    tree_generation: int,
     world_state: object,
     task_adapter: object,
 ) -> TreeExecutionBatchResult:
@@ -40,7 +41,7 @@ def execute_tree_batch(
                 tick=tick_number,
                 bt_status=status.name,
                 summary=task_adapter.describe_tick(world_state, tree, tick_number),
-                world_render=task_adapter.render_tick(world_state, tree, tick_number),
+                world_render=task_adapter.render_tick(world_state, tree, tick_number, tree_generation),
                 active_nodes=_collect_active_nodes(tree.root),
             )
         )

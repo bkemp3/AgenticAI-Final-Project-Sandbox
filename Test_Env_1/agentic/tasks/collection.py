@@ -30,7 +30,13 @@ class CollectionTaskAdapter:
             f"deposited_value={world.state.robot.inventory_value} task_success={task_success}"
         )
 
-    def render_tick(self, world: CollectionWorld, tree: py_trees.trees.BehaviourTree, tick: int) -> str | None:
+    def render_tick(
+        self,
+        world: CollectionWorld,
+        tree: py_trees.trees.BehaviourTree,
+        tick: int,
+        tree_generation: int,
+    ) -> str | None:
         blackboard = py_trees.blackboard.Blackboard()
         selected_object = self._safe_blackboard_get(blackboard, f"/{BLACKBOARD_SELECTED_ID}")
         observation = self._safe_blackboard_get(blackboard, f"/{BLACKBOARD_OBSERVATION}")
@@ -49,7 +55,7 @@ class CollectionTaskAdapter:
         deposited_objects = self._deposited_objects(world)
         lines = [
             (
-                f"tick {tick} | tree={tree.root.name} | bt_status={tree.root.status.name} "
+                f"tick {tick} | tree_generation={tree_generation} | bt_status={tree.root.status.name} "
                 f"| selected_target={selected_object}"
             ),
             "",

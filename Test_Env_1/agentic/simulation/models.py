@@ -28,11 +28,11 @@ class MaterialObject:
 @dataclass(slots=True)
 class CollectionConfig:
     grid_size: GridPosition
-    visibility_radius: int | None = None
     target_weight: float
     max_timesteps: int
     dropoff_location: GridPosition
     disappear_prob: float
+    visibility_radius: int | None = None
     target_value: float = 0.0
     carry_capacity: float = 0.0
     seed: int | None = None

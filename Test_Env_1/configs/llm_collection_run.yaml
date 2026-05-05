@@ -20,7 +20,7 @@ logging:
 critic:
   enabled: true
   model: gpt-5.4
-  interval_ticks: 3
-  max_repairs: 3
+  interval_ticks: 1
+  max_repairs: 5
   context_window_events: 8
   context_window_ticks: 6

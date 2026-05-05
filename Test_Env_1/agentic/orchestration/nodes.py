@@ -190,6 +190,7 @@ def execute_tree_node(state: OrchestrationState) -> dict[str, object]:
             compiled_tree,
             max_ticks=batch_limit,
             start_tick=current_tick,
+            tree_generation=state.get("repair_count") or 0,
             world_state=state["world_state"],
             task_adapter=task_adapter,
         )
