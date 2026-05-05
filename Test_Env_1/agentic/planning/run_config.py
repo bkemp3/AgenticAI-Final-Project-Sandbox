@@ -9,6 +9,7 @@ import yaml
 @dataclass(frozen=True)
 class CriticRunConfig:
     enabled: bool
+    model: str | None
     interval_ticks: int
     max_repairs: int
     context_window_events: int
@@ -57,6 +58,7 @@ def load_llm_task_run_config(path: str) -> LLMTaskRunConfig:
         output_dir=_resolve_path(config_path, _require(raw, "output_dir")),
         critic=CriticRunConfig(
             enabled=bool(critic_raw.get("enabled", False)),
+            model=str(critic_raw["model"]) if critic_raw.get("model") is not None else None,
             interval_ticks=int(critic_raw.get("interval_ticks", 3)),
             max_repairs=int(critic_raw.get("max_repairs", 1)),
             context_window_events=int(critic_raw.get("context_window_events", 10)),

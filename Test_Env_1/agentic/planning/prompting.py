@@ -11,6 +11,8 @@ from agentic.serialization import to_pretty_json
 PROMPTS_DIR = Path(__file__).resolve().parents[2] / "prompts"
 SYSTEM_PROMPT_PATH = PROMPTS_DIR / "planner_system_base.txt"
 USER_PROMPT_PATH = PROMPTS_DIR / "planner_user_base.txt"
+PLANNER_REPAIR_USER_PROMPT_PATH = PROMPTS_DIR / "planner_repair_user_base.txt"
+PLANNER_RETRY_USER_PROMPT_PATH = PROMPTS_DIR / "planner_retry_user_base.txt"
 
 
 def build_system_prompt(catalog: BehaviorCatalog) -> str:
@@ -108,29 +110,26 @@ def build_repair_user_prompt(
     used_behavior_block: str,
 ) -> str:
     instruction_block = "\n".join(f"- {item}" for item in repair_instructions) or "- Repair the tree to restore alignment."
-    sections = [
-        f"Goal:\n{goal}",
-        f"Original planning request:\n{base_user_prompt.strip()}",
-        (
-            "The current behavior tree needs runtime repair. "
-            "Return a complete revised BehaviorTreeStructure for the same task."
-        ),
-        f"Current tree:\n{current_tree_json}",
-        f"Critic diagnosis:\n{diagnosis}",
-        f"Targeted repair instructions:\n{instruction_block}",
-        f"Suspected problematic subtree or node:\n{to_pretty_json(suspected_node)}",
-        f"Visible world observation:\n{to_pretty_json(visible_world_observation)}",
-        f"Recent event window:\n{to_pretty_json(recent_events)}",
-        f"Recent tick/status trace:\n{to_pretty_json(recent_tick_trace)}",
-        f"Task progress and success signals:\n{to_pretty_json(task_progress_signals)}",
-        f"Current metrics:\n{to_pretty_json(metrics)}",
-        used_behavior_block,
-        (
-            "Keep the tree task-aligned under the current visible world state. "
-            "Do not rely on hidden simulator state. Do not return prose outside the schema."
-        ),
-    ]
-    return "\n\n".join(sections).strip()
+    return _load_prompt_asset(PLANNER_REPAIR_USER_PROMPT_PATH).format(
+        goal=goal,
+        base_user_prompt=base_user_prompt.strip(),
+        current_tree_json=current_tree_json,
+        diagnosis=diagnosis,
+        instruction_block=instruction_block,
+        suspected_node=to_pretty_json(suspected_node),
+        visible_world_observation=to_pretty_json(visible_world_observation),
+        recent_events=to_pretty_json(recent_events),
+        recent_tick_trace=to_pretty_json(recent_tick_trace),
+        task_progress_signals=to_pretty_json(task_progress_signals),
+        metrics=to_pretty_json(metrics),
+        used_behavior_block=used_behavior_block,
+    ).strip()
+
+
+def build_retry_user_prompt(validation_error: str) -> str:
+    return _load_prompt_asset(PLANNER_RETRY_USER_PROMPT_PATH).format(
+        validation_error=validation_error,
+    ).strip()
 
 
 def summarize_collection_config(config: CollectionConfig) -> str:

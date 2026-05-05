@@ -23,6 +23,7 @@ class OrchestrationState(TypedDict):
     max_tree_ticks: int | None
     retry_limit: int | None
     critic_enabled: bool
+    critic_model: str | None
     critic_interval_ticks: int | None
     critic_max_repairs: int | None
     critic_context_window_events: int | None

@@ -39,7 +39,7 @@ def select_planner(state: OrchestrationState) -> dict[str, object]:
         if state.get("critic_enabled"):
             runtime_critic = LLMRuntimeCritic(
                 behavior_catalog=state["behavior_catalog"],
-                model=state.get("model") or "gpt-4.1-mini",
+                model=state.get("critic_model") or state.get("model") or "gpt-4.1-mini",
             )
     else:
         if state.get("critic_enabled"):

@@ -11,6 +11,7 @@ from agentic.planning.base import BasePlanner, PlannerError
 from agentic.planning.prompting import (
     build_behavior_subset_block,
     build_repair_user_prompt,
+    build_retry_user_prompt,
     build_system_prompt,
     build_user_prompt,
 )
@@ -118,11 +119,7 @@ class LLMPlanner(BasePlanner):
                 messages.append(
                     {
                         "role": "user",
-                        "content": (
-                            "The previous behavior tree was invalid. "
-                            f"Validation error: {last_error}. "
-                            "Return a corrected BehaviorTreeStructure using only the allowed node types and params."
-                        ),
+                        "content": build_retry_user_prompt(last_error),
                     }
                 )
 

@@ -1,0 +1,6 @@
+The previous behavior tree was invalid.
+
+Validation error:
+{validation_error}
+
+Return a corrected BehaviorTreeStructure using only the allowed node types and params.

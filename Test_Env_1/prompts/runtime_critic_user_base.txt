@@ -1,0 +1,38 @@
+Goal:
+{goal}
+
+Task objective:
+{task_objective}
+
+Current behavior tree:
+{tree_json}
+
+Current BT status:
+{bt_status}
+
+Total ticks executed:
+{total_ticks}
+
+Repairs already used:
+{repair_count}
+
+Visible world observation:
+{visible_world_observation}
+
+Recent event window:
+{recent_events}
+
+Recent tick/status trace:
+{recent_tick_trace}
+
+Task progress and success signals:
+{task_progress_signals}
+
+Current metrics:
+{metrics}
+
+{used_behavior_block}
+
+Decision rule:
+Return CONTINUE only if execution appears meaningfully aligned with the task objective.
+Return REQUEST_REPAIR if the tree is stalled, semantically off-course, or terminal without objective success.

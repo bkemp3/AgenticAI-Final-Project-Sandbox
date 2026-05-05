@@ -44,7 +44,7 @@ def main() -> None:
     (output_dir / "system_prompt.txt").write_text(system_prompt + "\n", encoding="utf-8")
     (output_dir / "user_prompt.txt").write_text(user_prompt + "\n", encoding="utf-8")
 
-    app = build_orchestration_app()
+    app = build_orchestration_app(include_runtime_critic=run_config.critic.enabled)
     graph_artifacts = export_langgraph_visualization(
         app,
         name=f"{run_config.goal}_langgraph",
@@ -65,6 +65,7 @@ def main() -> None:
             "max_tree_ticks": run_config.max_tree_ticks,
             "retry_limit": run_config.retry_limit,
             "critic_enabled": run_config.critic.enabled,
+            "critic_model": run_config.critic.model,
             "critic_interval_ticks": run_config.critic.interval_ticks,
             "critic_max_repairs": run_config.critic.max_repairs,
             "critic_context_window_events": run_config.critic.context_window_events,

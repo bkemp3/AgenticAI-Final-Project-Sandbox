@@ -1,0 +1,41 @@
+Goal:
+{goal}
+
+Original planning request:
+{base_user_prompt}
+
+The current behavior tree needs runtime repair. Return a complete revised BehaviorTreeStructure for the same task.
+
+Current tree:
+{current_tree_json}
+
+Critic diagnosis:
+{diagnosis}
+
+Targeted repair instructions:
+{instruction_block}
+
+Suspected problematic subtree or node:
+{suspected_node}
+
+Visible world observation:
+{visible_world_observation}
+
+Recent event window:
+{recent_events}
+
+Recent tick/status trace:
+{recent_tick_trace}
+
+Task progress and success signals:
+{task_progress_signals}
+
+Current metrics:
+{metrics}
+
+{used_behavior_block}
+
+Rules:
+- Keep the tree task-aligned under the current visible world state.
+- Do not rely on hidden simulator state.
+- Do not return prose outside the schema.

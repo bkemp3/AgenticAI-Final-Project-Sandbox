@@ -83,7 +83,7 @@ def main() -> None:
     task_adapter = load_task_adapter("agentic.tasks.collection.adapter")
     behavior_catalog = load_behavior_catalog(str(repo_root / "behavior_sets" / "collection.yaml"))
     world = task_adapter.load_world(str(repo_root / "configs" / "collection_env_runtime_repair_demo.yaml"))
-    app = build_orchestration_app()
+    app = build_orchestration_app(include_runtime_critic=True)
 
     final_state = app.invoke(
         {
@@ -102,6 +102,7 @@ def main() -> None:
             "max_tree_ticks": 10,
             "retry_limit": 0,
             "critic_enabled": True,
+            "critic_model": None,
             "critic_interval_ticks": 4,
             "critic_max_repairs": 1,
             "critic_context_window_events": 6,

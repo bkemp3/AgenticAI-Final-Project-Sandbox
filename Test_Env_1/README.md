@@ -30,6 +30,7 @@ This keeps orchestration separate from the behavior tree runtime and prepares th
 ## Runtime Critic
 
 - The config-driven LangGraph runner can enable a runtime critic that executes every `critic.interval_ticks`.
+- The critic can use its own configured model via `critic.model`; if omitted, it falls back to the planner model.
 - The critic is a separate LangGraph node backed by an LLM and does not rewrite trees directly.
 - It evaluates visible observation, recent events, recent BT tick traces, task-adapter progress signals, and current metrics.
 - It returns structured `CONTINUE` or `REQUEST_REPAIR` output plus diagnosis and targeted repair instructions.

@@ -16,6 +16,7 @@ retry_limit: 1
 output_dir: ../outputs/collection_llm_runs
 critic:
   enabled: true
+  model: gpt-5.4
   interval_ticks: 3
   max_repairs: 2
   context_window_events: 8

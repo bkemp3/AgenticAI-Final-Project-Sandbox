@@ -14,7 +14,7 @@ class Agent:
         self.world_state = world_state
         self.planner_type = planner_type
         self.behavior_catalog = load_behavior_catalog(behavior_set_path)
-        self.app = build_orchestration_app()
+        self.app = build_orchestration_app(include_runtime_critic=False)
 
     def run(self, goal: str) -> OrchestrationState:
         """Run the full planning and execution workflow for a goal."""
@@ -36,6 +36,7 @@ class Agent:
             "max_tree_ticks": None,
             "retry_limit": None,
             "critic_enabled": False,
+            "critic_model": None,
             "critic_interval_ticks": None,
             "critic_max_repairs": None,
             "critic_context_window_events": None,
