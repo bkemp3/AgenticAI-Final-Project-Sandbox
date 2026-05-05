@@ -32,6 +32,8 @@ class CollectionConfig:
     max_timesteps: int
     dropoff_location: GridPosition
     disappear_prob: float
+    target_value: float = 0.0
+    carry_capacity: float = 0.0
     seed: int | None = None
 
 

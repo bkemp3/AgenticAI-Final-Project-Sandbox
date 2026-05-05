@@ -26,6 +26,8 @@ def load_collection_config(path: str) -> tuple[CollectionConfig, list[MaterialOb
         max_timesteps=int(_require(raw_config, "max_timesteps")),
         dropoff_location=dropoff_location,
         disappear_prob=_parse_probability(raw_config.get("disappear_prob"), "disappear_prob"),
+        target_value=float(raw_config.get("target_value", 0.0)),
+        carry_capacity=float(raw_config.get("carry_capacity", raw_config.get("target_weight", 0.0))),
         seed=int(raw_config["seed"]) if raw_config.get("seed") is not None else None,
     )
 

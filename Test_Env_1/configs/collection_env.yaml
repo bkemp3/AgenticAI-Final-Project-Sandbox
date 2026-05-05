@@ -1,5 +1,7 @@
 grid_size: [5, 5]
 target_weight: 5
+target_value: 19
+carry_capacity: 4
 max_timesteps: 12
 dropoff_location: [0, 0]
 disappear_prob: 0.0

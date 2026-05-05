@@ -136,6 +136,16 @@ class CollectionWorld:
             )
             self._advance_time()
             return False
+        if target.weight > self.remaining_carry_capacity():
+            self._log_invalid_action(
+                "attempt_pickup",
+                object_id=object_id,
+                reason="object exceeds remaining carry capacity",
+                object_weight=target.weight,
+                remaining_carry_capacity=self.remaining_carry_capacity(),
+            )
+            self._advance_time()
+            return False
 
         if self._rng.random() < target.pickup_failure_prob:
             self._failed_pickups += 1
@@ -214,6 +224,17 @@ class CollectionWorld:
         )
         self._advance_time()
         return True
+
+    def deposit_held_object(self) -> bool:
+        """Alias for BT-facing wrappers."""
+        return self.deposit_object()
+
+    def remaining_carry_capacity(self) -> float:
+        held_object_id = self.state.robot.holding_object_id
+        held_weight = 0.0
+        if held_object_id is not None:
+            held_weight = self.state.objects[held_object_id].weight
+        return max(self.state.config.carry_capacity - held_weight, 0.0)
 
     def goal_met(self) -> bool:
         return self.state.robot.inventory_weight >= self.state.config.target_weight
@@ -332,6 +353,10 @@ class CollectionWorld:
             raise ValueError("max_timesteps must be positive.")
         if config.target_weight < 0:
             raise ValueError("target_weight cannot be negative.")
+        if config.target_value < 0:
+            raise ValueError("target_value cannot be negative.")
+        if config.carry_capacity < 0:
+            raise ValueError("carry_capacity cannot be negative.")
         CollectionWorld._validate_position(
             config.dropoff_location,
             config.grid_size,
