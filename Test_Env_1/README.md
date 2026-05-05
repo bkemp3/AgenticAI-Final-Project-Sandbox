@@ -65,6 +65,12 @@ LLM planner:
 uv run examples/demo.py --planner llm
 ```
 
+Timed value-collection simulator demo:
+
+```bash
+python3 examples/collection_sim_demo.py
+```
+
 ## Behavior Sets
 
 - Behavior sets are configured via YAML files under `behavior_sets/` (JSON also supported).
@@ -73,3 +79,9 @@ uv run examples/demo.py --planner llm
 - Behavior sets define:
   - Allowed leaf/condition node types for planning
   - Runtime class mappings used for compilation/execution
+
+## Simulation
+
+- `agentic/simulation/` contains a ground-truth collection simulator kept separate from `bt_spec` and `bt_runtime`.
+- Environment parameters live in YAML, with a sample at `configs/collection_env.yaml`.
+- The simulator tracks hidden object state, stochastic pickup failures, object disappearance, event logs, observations, and task metrics.

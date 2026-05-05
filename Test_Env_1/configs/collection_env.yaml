@@ -1,0 +1,22 @@
+grid_size: [5, 5]
+target_weight: 5
+max_timesteps: 12
+dropoff_location: [0, 0]
+disappear_prob: 0.0
+default_pickup_failure_prob: 0.15
+seed: 7
+objects:
+  - object_id: bronze_cube
+    position: [1, 0]
+    weight: 3
+    value: 8
+    pickup_failure_prob: 0.0
+  - object_id: silver_cylinder
+    position: [2, 0]
+    weight: 2
+    value: 11
+    pickup_failure_prob: 0.0
+  - object_id: gold_prism
+    position: [3, 1]
+    weight: 4
+    value: 18
