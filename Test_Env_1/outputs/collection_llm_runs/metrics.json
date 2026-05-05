@@ -2,7 +2,7 @@
   "success": false,
   "total_weight_collected": 0.0,
   "total_value_collected": 0.0,
-  "timesteps_used": 5,
+  "timesteps_used": 3,
   "failed_pickups": 0,
   "successful_pickups": 1,
   "deposits": 0,

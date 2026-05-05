@@ -4,8 +4,15 @@ Plan for a robot that must maximize deposited value before the timestep limit wh
 
 The simulator owns ground truth. The behavior tree should reason only through the provided observation and action leaves.
 
+Task invariants:
+- Picking up an object is not task success.
+- Value counts only after a held object is deposited at the dropoff.
+- A correct tree should continue sensing, selecting, collecting, navigating, and depositing until collection_value_goal_met succeeds or the task can no longer make progress.
+- Do not let the tree terminate successfully just because a pickup action succeeded.
+
 Prefer concise, valid trees that:
 - sense before making observation-dependent decisions
 - choose visible objects using an explicit strategy when needed
 - deposit held objects at the dropoff
 - replan if a selected object is no longer available
+- ensure successful completion depends on deposited value reaching the target

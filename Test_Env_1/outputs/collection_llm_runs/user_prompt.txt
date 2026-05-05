@@ -4,7 +4,7 @@ Build a BehaviorTreeStructure using only the allowed node types:
 sequence, selector, sense_collection_world, collection_value_goal_met, time_remaining, select_best_material, navigate_to_selected_object, object_still_available, attempt_pickup_selected_object, holding_object, carry_capacity_available, navigate_to_dropoff, deposit_held_object, replan_collection_target
 
 Task instruction:
-Maximize total collected value before timeout while respecting carry capacity, only acting through visible objects and depositing held objects at the dropoff.
+Maximize total deposited value before timeout while respecting carry capacity, only acting through visible objects and depositing held objects at the dropoff. Do not treat pickup alone as success; the tree should only complete once collection_value_goal_met is satisfied or no further progress is possible.
 
 High-level environment summary:
 - grid_size: (5, 5)
