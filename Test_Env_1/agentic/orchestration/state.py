@@ -37,6 +37,8 @@ class OrchestrationState(TypedDict):
     runtime_bt_status: str | None
     error_message: str | None
     tree_image_path: str | None
+    tree_spec_history: list[dict[str, object]]
+    tree_artifact_history: list[dict[str, object]]
     graph_mermaid_path: str | None
     graph_image_path: str | None
     tick_count: int

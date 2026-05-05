@@ -11,13 +11,14 @@ task_prompt: >-
   collection_value_goal_met is satisfied or no further progress is possible.
 system_prompt_path: ../prompts/collection_planner_system.txt
 user_prompt_include_environment_summary: true
-max_tree_ticks: 12
+max_tree_ticks: 30
 retry_limit: 1
-output_dir: ../outputs/collection_llm_runs
+output_dir: ../outputs
+output_namespace: collection_llm_runs
 critic:
   enabled: true
   model: gpt-5.4
   interval_ticks: 3
-  max_repairs: 2
+  max_repairs: 3
   context_window_events: 8
   context_window_ticks: 6

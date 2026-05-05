@@ -64,8 +64,23 @@ def generate_plan(state: OrchestrationState) -> dict[str, object]:
             tree_spec = planner.repair_plan(state["goal"], current_tree, repair_request)
         else:
             tree_spec = planner.create_plan(state["goal"])
+        spec_path = _persist_tree_spec(
+            tree_spec=tree_spec,
+            output_dir=state.get("tree_output_dir"),
+            repair_count=state.get("repair_count") or 0,
+        )
+        tree_spec_history = list(state.get("tree_spec_history") or [])
+        tree_spec_history.append(
+            {
+                "repair_count": state.get("repair_count") or 0,
+                "goal": tree_spec.goal,
+                "description": tree_spec.description,
+                "path": spec_path,
+            }
+        )
         return {
             "tree_spec": tree_spec,
+            "tree_spec_history": tree_spec_history,
             "planner_repair_request": None,
             "critic_due": False,
             "critic_decision": None,
@@ -112,7 +127,17 @@ def visualize_tree(state: OrchestrationState) -> dict[str, object]:
             output_dir=state.get("tree_output_dir") or "outputs/trees",
         )
         tree_image_path = _pick_tree_image_path(artifacts)
-        return {"tree_image_path": tree_image_path}
+        tree_artifact_history = list(state.get("tree_artifact_history") or [])
+        tree_artifact_history.append(
+            {
+                "repair_count": repair_count,
+                "goal": goal_name,
+                "artifact_name": artifact_name,
+                "artifacts": artifacts or {},
+                "primary_path": tree_image_path,
+            }
+        )
+        return {"tree_image_path": tree_image_path, "tree_artifact_history": tree_artifact_history}
     except Exception as exc:
         return _error_update(f"Tree visualization failed: {exc}")
 
@@ -324,3 +349,21 @@ def _pick_tree_image_path(artifacts: dict[str, str] | None) -> str | None:
 
 def _error_update(message: str) -> dict[str, object]:
     return {"error_message": message, "execution_should_continue": False, "critic_due": False}
+
+
+def _persist_tree_spec(
+    *,
+    tree_spec,
+    output_dir: str | None,
+    repair_count: int,
+) -> str | None:
+    if output_dir is None:
+        return None
+
+    tree_dir = Path(output_dir)
+    tree_dir.mkdir(parents=True, exist_ok=True)
+    goal_name = tree_spec.goal
+    filename = f"{goal_name}.json" if repair_count == 0 else f"{goal_name}_repair_{repair_count}.json"
+    path = tree_dir / filename
+    path.write_text(tree_spec.model_dump_json(indent=2) + "\n", encoding="utf-8")
+    return str(path)

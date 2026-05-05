@@ -50,6 +50,8 @@ class Agent:
             "runtime_bt_status": None,
             "error_message": None,
             "tree_image_path": None,
+            "tree_spec_history": [],
+            "tree_artifact_history": [],
             "graph_mermaid_path": graph_artifacts["mermaid"],
             "graph_image_path": graph_artifacts["png"],
             "tick_count": 0,

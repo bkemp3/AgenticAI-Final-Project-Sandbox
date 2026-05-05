@@ -30,6 +30,7 @@ class LLMTaskRunConfig:
     max_tree_ticks: int
     retry_limit: int
     output_dir: str
+    output_namespace: str | None
     critic: CriticRunConfig
 
 
@@ -56,6 +57,7 @@ def load_llm_task_run_config(path: str) -> LLMTaskRunConfig:
         max_tree_ticks=int(_require(raw, "max_tree_ticks")),
         retry_limit=int(raw.get("retry_limit", 1)),
         output_dir=_resolve_path(config_path, _require(raw, "output_dir")),
+        output_namespace=str(raw["output_namespace"]).strip() if raw.get("output_namespace") is not None else None,
         critic=CriticRunConfig(
             enabled=bool(critic_raw.get("enabled", False)),
             model=str(critic_raw["model"]) if critic_raw.get("model") is not None else None,

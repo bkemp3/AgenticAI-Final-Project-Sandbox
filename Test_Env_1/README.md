@@ -83,6 +83,12 @@ Config-driven LLM task runner:
 uv run python examples/llm_task_demo.py configs/llm_collection_run.yaml
 ```
 
+Override the output namespace for a run:
+
+```bash
+uv run python examples/llm_task_demo.py configs/llm_collection_run.yaml --output-namespace my_experiment
+```
+
 Timed value-collection simulator demo:
 
 ```bash
@@ -90,6 +96,12 @@ python3 examples/collection_sim_demo.py
 ```
 
 This demo loads the YAML environment, advances the simulator by one timestep, shows partial observations, runs a short scripted collection sequence, and prints the resulting event log and final metrics.
+
+LLM task runs write to `outputs/<namespace>/<timestamp>/`, with `outputs/<namespace>/latest` pointing to the newest run. The most useful files are:
+- `run_summary.md` / `run_summary.json`: quick retrospective summary
+- `resolved_run_config.json`: resolved models, limits, namespace, and config path
+- `metrics.json`, `critic_history.json`, `runtime_tick_trace.json`: outcome and execution trace
+- `tree_spec_history.json`, `tree_artifact_history.json`: initial tree plus repaired tree lineage
 
 ## Behavior Sets
 

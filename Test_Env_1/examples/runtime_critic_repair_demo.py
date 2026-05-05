@@ -116,6 +116,8 @@ def main() -> None:
             "runtime_bt_status": None,
             "error_message": None,
             "tree_image_path": None,
+            "tree_spec_history": [],
+            "tree_artifact_history": [],
             "graph_mermaid_path": None,
             "graph_image_path": None,
             "tick_count": 0,
