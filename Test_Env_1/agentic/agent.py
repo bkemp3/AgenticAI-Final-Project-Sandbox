@@ -2,15 +2,12 @@ from agentic.behaviors.catalog import load_behavior_catalog
 from agentic.orchestration.graph import build_orchestration_app
 from agentic.orchestration.state import OrchestrationState
 from agentic.orchestration.visualization import export_langgraph_visualization
-from agentic.world_state import WorldState
-
-
 class Agent:
     """Agent that runs the pipeline through LangGraph orchestration."""
 
     def __init__(
         self,
-        world_state: WorldState,
+        world_state: object,
         planner_type: str = "rule_based",
         behavior_set_path: str | None = None,
     ) -> None:

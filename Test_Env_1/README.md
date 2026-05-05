@@ -81,9 +81,12 @@ This demo loads the YAML environment, advances the simulator by one timestep, sh
 - Behavior sets define:
   - Allowed leaf/condition node types for planning
   - Runtime class mappings used for compilation/execution
+  - Optional leaf parameter metadata that the LLM planner may use when generating trees
 
 ## Simulation
 
 - `agentic/simulation/` contains a ground-truth collection simulator kept separate from `bt_spec` and `bt_runtime`.
 - Environment parameters live in YAML, with a sample at `configs/collection_env.yaml`.
 - The simulator tracks hidden object state, stochastic pickup failures, object disappearance, event logs, observations, and task metrics.
+- For collection tasks, `behavior_sets/collection.yaml` defines the BT leaves and allowed leaf params available to an LLM planner, while `configs/collection_env.yaml` defines the simulator environment.
+- `examples/collection_compiled_tree_demo.py` shows the two-YAML split by loading the collection behavior set, loading the collection environment, compiling a generated-style tree, and executing it against the simulator.

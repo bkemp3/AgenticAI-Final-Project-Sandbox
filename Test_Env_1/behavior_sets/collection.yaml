@@ -1,0 +1,52 @@
+name: collection
+leaf_behaviors:
+  - type: sense_collection_world
+    description: Observe the simulator through its partial observation API and write the latest observation to the blackboard.
+    runtime_class: agentic.bt_runtime.collection_behaviors.SenseCollectionWorld
+    params:
+      - key: visibility_radius
+        description: Optional integer sensing radius. Use null for full observability of available objects.
+      - key: include_object_details
+        description: Boolean. True exposes visible object weights and values, false hides them.
+  - type: collection_value_goal_met
+    description: Succeeds when deposited inventory value reaches the target value.
+    runtime_class: agentic.bt_runtime.collection_behaviors.CollectionValueGoalMet
+    params:
+      - key: target_value
+        description: Optional numeric override for the simulator target value.
+  - type: time_remaining
+    description: Succeeds when the latest observation reports at least a minimum number of timesteps remaining.
+    runtime_class: agentic.bt_runtime.collection_behaviors.TimeRemaining
+    params:
+      - key: minimum_remaining
+        description: Minimum required timesteps remaining.
+  - type: select_best_material
+    description: Select a visible object that fits remaining carry capacity and store its id and position on the blackboard.
+    runtime_class: agentic.bt_runtime.collection_behaviors.SelectBestMaterial
+    params:
+      - key: strategy
+        description: One of highest_value, value_per_weight, value_per_distance, or nearest.
+  - type: navigate_to_selected_object
+    description: Move one grid step toward the selected object. Returns RUNNING until the robot reaches the object.
+    runtime_class: agentic.bt_runtime.collection_behaviors.NavigateToSelectedObject
+  - type: object_still_available
+    description: Succeeds if the selected object is still visible in the latest observation.
+    runtime_class: agentic.bt_runtime.collection_behaviors.ObjectStillAvailable
+  - type: attempt_pickup_selected_object
+    description: Attempt to pick up the selected object through the simulator.
+    runtime_class: agentic.bt_runtime.collection_behaviors.AttemptPickupSelectedObject
+  - type: holding_object
+    description: Succeeds if the robot is currently holding an object.
+    runtime_class: agentic.bt_runtime.collection_behaviors.HoldingObject
+  - type: carry_capacity_available
+    description: Succeeds if at least one visible object, or the selected object, fits within remaining carry capacity.
+    runtime_class: agentic.bt_runtime.collection_behaviors.CarryCapacityAvailable
+  - type: navigate_to_dropoff
+    description: Move one grid step toward the simulator dropoff location. Returns RUNNING until the robot arrives.
+    runtime_class: agentic.bt_runtime.collection_behaviors.NavigateToDropoff
+  - type: deposit_held_object
+    description: Deposit the currently held object at the dropoff location through the simulator.
+    runtime_class: agentic.bt_runtime.collection_behaviors.DepositHeldObject
+  - type: replan_collection_target
+    description: Clear the selected object blackboard keys so the next sense/select cycle can replan.
+    runtime_class: agentic.bt_runtime.collection_behaviors.ReplanCollectionTarget

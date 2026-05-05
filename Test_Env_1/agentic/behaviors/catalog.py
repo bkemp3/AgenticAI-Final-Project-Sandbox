@@ -9,10 +9,17 @@ import yaml
 
 
 @dataclass(frozen=True)
+class BehaviorParamDefinition:
+    key: str
+    description: str
+
+
+@dataclass(frozen=True)
 class BehaviorDefinition:
     type: str
     description: str
     runtime_class: str
+    params: tuple[BehaviorParamDefinition, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -53,6 +60,13 @@ def load_behavior_catalog(path: str | None = None) -> BehaviorCatalog:
             type=item["type"],
             description=item.get("description", ""),
             runtime_class=item["runtime_class"],
+            params=tuple(
+                BehaviorParamDefinition(
+                    key=param["key"],
+                    description=param.get("description", ""),
+                )
+                for param in item.get("params", [])
+            ),
         )
         for item in raw["leaf_behaviors"]
     )

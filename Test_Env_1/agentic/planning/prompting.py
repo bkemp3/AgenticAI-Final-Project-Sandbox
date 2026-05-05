@@ -5,10 +5,7 @@ from agentic.behaviors.catalog import BehaviorCatalog
 def build_system_prompt(catalog: BehaviorCatalog) -> str:
     """Build the compact planner instructions for the LLM."""
 
-    leaf_rules = "\n".join(
-        f"- {behavior.type}: leaf/condition, no children. {behavior.description}".strip()
-        for behavior in catalog.leaf_behaviors
-    )
+    leaf_rules = "\n".join(_format_behavior_rule(behavior) for behavior in catalog.leaf_behaviors)
     allowed_types = ", ".join(catalog.allowed_node_types)
     return dedent(
         f"""
@@ -31,6 +28,14 @@ def build_system_prompt(catalog: BehaviorCatalog) -> str:
         - Do not generate code.
         """
     ).strip()
+
+
+def _format_behavior_rule(behavior) -> str:
+    base = f"- {behavior.type}: leaf/condition, no children. {behavior.description}".strip()
+    if not behavior.params:
+        return base
+    params = "; ".join(f"{param.key}: {param.description}" for param in behavior.params)
+    return f"{base} Allowed params: {params}"
 
 
 def build_user_prompt(goal: str, catalog: BehaviorCatalog) -> str:
