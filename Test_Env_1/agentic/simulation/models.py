@@ -28,6 +28,7 @@ class MaterialObject:
 @dataclass(slots=True)
 class CollectionConfig:
     grid_size: GridPosition
+    visibility_radius: int | None = None
     target_weight: float
     max_timesteps: int
     dropoff_location: GridPosition

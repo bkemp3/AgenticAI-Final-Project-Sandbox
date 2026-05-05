@@ -138,6 +138,7 @@ def summarize_collection_config(config: CollectionConfig) -> str:
     return "\n".join(
         [
             f"- grid_size: {config.grid_size}",
+            f"- visibility_radius: {config.visibility_radius}",
             f"- target_value: {config.target_value}",
             f"- carry_capacity: {config.carry_capacity}",
             f"- max_timesteps: {config.max_timesteps}",

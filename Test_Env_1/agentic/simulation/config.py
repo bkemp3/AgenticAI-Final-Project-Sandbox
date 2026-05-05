@@ -22,6 +22,7 @@ def load_collection_config(path: str) -> tuple[CollectionConfig, list[MaterialOb
     )
     config = CollectionConfig(
         grid_size=grid_size,
+        visibility_radius=int(raw_config["visibility_radius"]) if raw_config.get("visibility_radius") is not None else None,
         target_weight=float(_require(raw_config, "target_weight")),
         max_timesteps=int(_require(raw_config, "max_timesteps")),
         dropoff_location=dropoff_location,

@@ -1,4 +1,5 @@
 grid_size: [5, 5]
+visibility_radius: 2
 target_weight: 5
 target_value: 19
 carry_capacity: 4
