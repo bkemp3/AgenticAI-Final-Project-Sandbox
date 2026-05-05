@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import py_trees
 
-from agentic.bt_runtime.collection_behaviors import BLACKBOARD_SELECTED_ID
+from agentic.bt_runtime.collection_behaviors import BLACKBOARD_OBSERVATION, BLACKBOARD_SELECTED_ID
 from agentic.bt_spec.nodes import LeafNode, SequenceNode
 from agentic.bt_spec.tree_structure import BehaviorTreeStructure
 from agentic.planning.prompting import summarize_collection_config
@@ -23,19 +23,46 @@ class CollectionTaskAdapter:
     def describe_tick(self, world: CollectionWorld, tree: py_trees.trees.BehaviourTree, tick: int) -> str:
         blackboard = py_trees.blackboard.Blackboard()
         selected_object = self._safe_blackboard_get(blackboard, f"/{BLACKBOARD_SELECTED_ID}")
+        task_success = self.is_success(world)
         return (
             f"tick={tick} status={tree.root.status} selected_object={selected_object} "
-            f"position={world.state.robot.position} held={world.state.robot.holding_object_id}"
+            f"position={world.state.robot.position} held={world.state.robot.holding_object_id} "
+            f"deposited_value={world.state.robot.inventory_value} task_success={task_success}"
         )
+
+    def get_visible_observation(self, world: CollectionWorld, tree: py_trees.trees.BehaviourTree) -> object | None:
+        blackboard = py_trees.blackboard.Blackboard()
+        return self._safe_blackboard_get(blackboard, f"/{BLACKBOARD_OBSERVATION}")
 
     def get_events(self, world: CollectionWorld) -> list[object]:
         return list(world.events)
 
     def get_metrics(self, world: CollectionWorld) -> object:
-        return world.get_metrics()
+        metrics = world.get_metrics()
+        return {
+            "simulator_metrics": metrics,
+            "task_success": self.is_success(world),
+            "target_value_goal_met": world.state.robot.inventory_value >= world.state.config.target_value,
+            "target_value": world.state.config.target_value,
+        }
+
+    def get_progress_signals(self, world: CollectionWorld) -> object:
+        return {
+            "task_success": self.is_success(world),
+            "inventory_value": world.state.robot.inventory_value,
+            "target_value": world.state.config.target_value,
+            "inventory_weight": world.state.robot.inventory_weight,
+            "carry_capacity_remaining": world.remaining_carry_capacity(),
+            "holding_object_id": world.state.robot.holding_object_id,
+            "time_remaining": max(world.state.config.max_timesteps - world.state.timestep, 0),
+            "timestep": world.state.timestep,
+        }
+
+    def is_success(self, world: CollectionWorld) -> bool:
+        return world.state.robot.inventory_value >= world.state.config.target_value
 
     def is_terminal(self, world: CollectionWorld) -> bool:
-        return world.is_terminal()
+        return self.is_success(world) or world.state.timestep >= world.state.config.max_timesteps
 
     def validate_plan(self, tree_spec: BehaviorTreeStructure) -> str | None:
         root = tree_spec.root

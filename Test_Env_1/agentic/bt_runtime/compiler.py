@@ -20,6 +20,7 @@ def compile_behavior_tree(
 ) -> py_trees.trees.BehaviourTree:
     """Compile a validated tree spec into a py_trees behavior tree."""
 
+    py_trees.blackboard.Blackboard.clear()
     root = _compile_node(tree_spec.root, world_state, leaf_behaviour_registry)
     tree = py_trees.trees.BehaviourTree(root=root)
     py_trees.blackboard.Blackboard().set(BLACKBOARD_WORLD, world_state)

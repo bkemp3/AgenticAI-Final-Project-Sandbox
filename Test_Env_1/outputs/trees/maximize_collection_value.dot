@@ -1,0 +1,15 @@
+digraph pastafarianism {
+ordering=out;
+graph [fontname="times-roman"];
+node [fontname="times-roman"];
+edge [fontname="times-roman"];
+bad_pickup_only_plan [label="bad_pickup_only_plan", shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
+SenseCollectionWorld [label=SenseCollectionWorld, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+bad_pickup_only_plan -> SenseCollectionWorld;
+SelectBestMaterial [label=SelectBestMaterial, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+bad_pickup_only_plan -> SelectBestMaterial;
+NavigateToSelectedObject [label=NavigateToSelectedObject, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+bad_pickup_only_plan -> NavigateToSelectedObject;
+AttemptPickupSelectedObject [label=AttemptPickupSelectedObject, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+bad_pickup_only_plan -> AttemptPickupSelectedObject;
+}

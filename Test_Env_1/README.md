@@ -14,7 +14,7 @@ Important: LangGraph is not the behavior tree. The behavior tree itself remains 
 
 Current flow:
 
-Goal -> planner selection -> plan generation -> validation -> compilation -> visualization -> execution -> result
+Goal -> planner selection -> plan generation -> validation -> compilation -> visualization -> execution batches -> runtime critic -> continue or repair -> result
 
 This keeps orchestration separate from the behavior tree runtime and prepares the system for future replanning, monitoring, and recovery.
 
@@ -25,6 +25,16 @@ This keeps orchestration separate from the behavior tree runtime and prepares th
 - `LLMPlanner` uses the OpenAI Python SDK to request a structured `BehaviorTreeStructure`.
 - Planners return validated `BehaviorTreeStructure` objects, not executable code.
 - Reusable planner prompt assets live under `prompts/`. The planner composes these files with behavior-catalog metadata at runtime.
+- The same `LLMPlanner` now also handles runtime BT repair when the runtime critic requests replanning from the current world state.
+
+## Runtime Critic
+
+- The config-driven LangGraph runner can enable a runtime critic that executes every `critic.interval_ticks`.
+- The critic is a separate LangGraph node backed by an LLM and does not rewrite trees directly.
+- It evaluates visible observation, recent events, recent BT tick traces, task-adapter progress signals, and current metrics.
+- It returns structured `CONTINUE` or `REQUEST_REPAIR` output plus diagnosis and targeted repair instructions.
+- When repair is requested, the orchestration loop calls the planner again with the current tree and recent runtime context, recompiles the revised tree, and resumes execution from the current simulator state.
+- Repair loops are bounded by `critic.max_repairs`.
 
 To use `LLMPlanner`, set:
 
@@ -97,8 +107,8 @@ This demo loads the YAML environment, advances the simulator by one timestep, sh
 - The simulator tracks hidden object state, stochastic pickup failures, object disappearance, event logs, observations, and task metrics.
 - For collection tasks, `behavior_sets/collection.yaml` defines the BT leaves and allowed leaf params available to an LLM planner, while `configs/collection_env.yaml` defines the simulator environment.
 - `configs/llm_collection_run.yaml` is the minimal top-level run config for LLM-driven collection experiments. It points to a task adapter, environment YAML, behavior-set YAML, system prompt file, model name, task prompt, and tick budget.
-- `configs/llm_collection_run.yaml` also controls whether a high-level environment summary is included in the user prompt and how many times the planner retries after validation failure.
+- `configs/llm_collection_run.yaml` also controls whether a high-level environment summary is included in the user prompt, how many times the planner retries after validation failure, and whether the runtime critic is enabled.
 - `prompts/collection_planner_system.txt` stores the collection-specific system prompt referenced by the run config.
 - `prompts/planner_system_base.txt` and `prompts/planner_user_base.txt` store the reusable planner prompt text used by `agentic/planning/prompting.py`.
 - `examples/collection_compiled_tree_demo.py` shows the two-YAML split by loading the collection behavior set, loading the collection environment, compiling a generated-style tree, and executing it against the simulator.
-- `examples/llm_task_demo.py` is the primary LangGraph-based task runner. It loads a run config, imports the configured task adapter, composes the final prompts from prompt assets plus behavior metadata, asks the LLM for a tree through the orchestration graph, exports LangGraph Mermaid output and behavior-tree images, executes the tree against the adapter-provided world, and writes prompts, events, metrics, and the generated tree spec to the configured output directory.
+- `examples/llm_task_demo.py` is the primary LangGraph-based task runner. It loads a run config, imports the configured task adapter, composes the final prompts from prompt assets plus behavior metadata, asks the LLM for a tree through the orchestration graph, exports LangGraph Mermaid output and behavior-tree images, executes the tree in critic-sized batches against the adapter-provided world, and writes prompts, events, metrics, runtime traces, critic history, and the generated tree spec to the configured output directory.

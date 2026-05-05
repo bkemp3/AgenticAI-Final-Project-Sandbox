@@ -15,9 +15,15 @@ class TaskAdapterProtocol(Protocol):
 
     def describe_tick(self, world: object, tree: py_trees.trees.BehaviourTree, tick: int) -> str: ...
 
+    def get_visible_observation(self, world: object, tree: py_trees.trees.BehaviourTree) -> object | None: ...
+
     def get_events(self, world: object) -> list[object]: ...
 
     def get_metrics(self, world: object) -> object: ...
+
+    def get_progress_signals(self, world: object) -> object: ...
+
+    def is_success(self, world: object) -> bool: ...
 
     def is_terminal(self, world: object) -> bool: ...
 
@@ -40,8 +46,11 @@ def load_task_adapter(import_path: str) -> TaskAdapterProtocol:
         "load_world",
         "summarize_world",
         "describe_tick",
+        "get_visible_observation",
         "get_events",
         "get_metrics",
+        "get_progress_signals",
+        "is_success",
         "is_terminal",
         "validate_plan",
     )

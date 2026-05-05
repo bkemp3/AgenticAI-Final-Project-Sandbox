@@ -1,0 +1,15 @@
+digraph pastafarianism {
+ordering=out;
+graph [fontname="times-roman"];
+node [fontname="times-roman"];
+edge [fontname="times-roman"];
+deposit_after_pickup_repair [label="deposit_after_pickup_repair", shape=box, style=filled, fillcolor=orange, fontsize=9, fontcolor=black];
+HoldingObject [label=HoldingObject, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+deposit_after_pickup_repair -> HoldingObject;
+NavigateToDropoff [label=NavigateToDropoff, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+deposit_after_pickup_repair -> NavigateToDropoff;
+DepositHeldObject [label=DepositHeldObject, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+deposit_after_pickup_repair -> DepositHeldObject;
+CollectionValueGoalMet [label=CollectionValueGoalMet, shape=ellipse, style=filled, fillcolor=gray, fontsize=9, fontcolor=black];
+deposit_after_pickup_repair -> CollectionValueGoalMet;
+}

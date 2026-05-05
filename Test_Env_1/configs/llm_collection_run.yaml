@@ -14,3 +14,9 @@ user_prompt_include_environment_summary: true
 max_tree_ticks: 12
 retry_limit: 1
 output_dir: ../outputs/collection_llm_runs
+critic:
+  enabled: true
+  interval_ticks: 3
+  max_repairs: 2
+  context_window_events: 8
+  context_window_ticks: 6

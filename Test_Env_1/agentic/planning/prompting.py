@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 from agentic.behaviors.catalog import BehaviorCatalog
+from agentic.bt_spec.nodes import LeafNode, SelectorNode, SequenceNode
 from agentic.simulation import CollectionConfig
+from agentic.serialization import to_pretty_json
 
 
 PROMPTS_DIR = Path(__file__).resolve().parents[2] / "prompts"
@@ -38,7 +42,23 @@ def build_user_prompt(goal: str, catalog: BehaviorCatalog) -> str:
 def build_behavior_catalog_block(catalog: BehaviorCatalog) -> str:
     """Describe the allowed BT nodes and leaf params for planner prompts."""
 
+    return build_behavior_subset_block(catalog)
+
+
+def build_behavior_subset_block(
+    catalog: BehaviorCatalog,
+    tree_spec=None,
+) -> str:
+    """Describe either the full catalog or only the leaves referenced by a tree."""
+
+    allowed_leaf_types = None if tree_spec is None else _collect_leaf_types(tree_spec.root)
     leaf_rules = "\n".join(_format_behavior_rule(behavior) for behavior in catalog.leaf_behaviors)
+    if allowed_leaf_types is not None:
+        leaf_rules = "\n".join(
+            _format_behavior_rule(behavior)
+            for behavior in catalog.leaf_behaviors
+            if behavior.type in allowed_leaf_types
+        )
     allowed_types = ", ".join(catalog.allowed_node_types)
     return "\n".join(
         [
@@ -72,6 +92,47 @@ def build_run_user_prompt(
     return "\n\n".join(sections).strip()
 
 
+def build_repair_user_prompt(
+    *,
+    goal: str,
+    base_user_prompt: str,
+    current_tree_json: str,
+    diagnosis: str,
+    repair_instructions: list[str],
+    suspected_node: object | None,
+    visible_world_observation: object | None,
+    recent_events: list[object],
+    recent_tick_trace: list[object],
+    task_progress_signals: object | None,
+    metrics: object | None,
+    used_behavior_block: str,
+) -> str:
+    instruction_block = "\n".join(f"- {item}" for item in repair_instructions) or "- Repair the tree to restore alignment."
+    sections = [
+        f"Goal:\n{goal}",
+        f"Original planning request:\n{base_user_prompt.strip()}",
+        (
+            "The current behavior tree needs runtime repair. "
+            "Return a complete revised BehaviorTreeStructure for the same task."
+        ),
+        f"Current tree:\n{current_tree_json}",
+        f"Critic diagnosis:\n{diagnosis}",
+        f"Targeted repair instructions:\n{instruction_block}",
+        f"Suspected problematic subtree or node:\n{to_pretty_json(suspected_node)}",
+        f"Visible world observation:\n{to_pretty_json(visible_world_observation)}",
+        f"Recent event window:\n{to_pretty_json(recent_events)}",
+        f"Recent tick/status trace:\n{to_pretty_json(recent_tick_trace)}",
+        f"Task progress and success signals:\n{to_pretty_json(task_progress_signals)}",
+        f"Current metrics:\n{to_pretty_json(metrics)}",
+        used_behavior_block,
+        (
+            "Keep the tree task-aligned under the current visible world state. "
+            "Do not rely on hidden simulator state. Do not return prose outside the schema."
+        ),
+    ]
+    return "\n\n".join(sections).strip()
+
+
 def summarize_collection_config(config: CollectionConfig) -> str:
     """Produce a high-level environment summary without revealing hidden object state."""
 
@@ -91,3 +152,14 @@ def summarize_collection_config(config: CollectionConfig) -> str:
 
 def _load_prompt_asset(path: Path) -> str:
     return path.read_text(encoding="utf-8").strip()
+
+
+def _collect_leaf_types(node) -> set[str]:
+    if isinstance(node, LeafNode):
+        return {node.type}
+    if isinstance(node, (SequenceNode, SelectorNode)):
+        leaf_types: set[str] = set()
+        for child in node.children:
+            leaf_types.update(_collect_leaf_types(child))
+        return leaf_types
+    return set()

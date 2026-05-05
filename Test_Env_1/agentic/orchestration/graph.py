@@ -7,6 +7,7 @@ from agentic.orchestration.nodes import (
     execute_tree_node,
     generate_plan,
     handle_error,
+    runtime_critic_node,
     select_planner,
     visualize_tree,
 )
@@ -22,6 +23,7 @@ def build_orchestration_app():
     graph.add_node("compile_tree", compile_tree)
     graph.add_node("visualize_tree", visualize_tree)
     graph.add_node("execute_tree", execute_tree_node)
+    graph.add_node("runtime_critic", runtime_critic_node)
     graph.add_node("handle_error", handle_error)
 
     graph.add_edge(START, "select_planner")
@@ -48,7 +50,22 @@ def build_orchestration_app():
     graph.add_conditional_edges(
         "execute_tree",
         _route_after_execution,
-        {"end": END, "handle_error": "handle_error"},
+        {
+            "execute_tree": "execute_tree",
+            "runtime_critic": "runtime_critic",
+            "end": END,
+            "handle_error": "handle_error",
+        },
+    )
+    graph.add_conditional_edges(
+        "runtime_critic",
+        _route_after_runtime_critic,
+        {
+            "generate_plan": "generate_plan",
+            "execute_tree": "execute_tree",
+            "end": END,
+            "handle_error": "handle_error",
+        },
     )
     graph.add_edge("handle_error", END)
 
@@ -74,4 +91,18 @@ def _route_after_visualize_tree(state: OrchestrationState) -> str:
 def _route_after_execution(state: OrchestrationState) -> str:
     if state.get("error_message"):
         return "handle_error"
+    if state.get("critic_due"):
+        return "runtime_critic"
+    if state.get("execution_should_continue"):
+        return "execute_tree"
+    return "end"
+
+
+def _route_after_runtime_critic(state: OrchestrationState) -> str:
+    if state.get("error_message"):
+        return "handle_error"
+    if state.get("planner_repair_request") is not None:
+        return "generate_plan"
+    if state.get("execution_should_continue"):
+        return "execute_tree"
     return "end"

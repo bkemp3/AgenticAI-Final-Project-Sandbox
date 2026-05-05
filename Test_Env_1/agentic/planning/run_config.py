@@ -7,6 +7,15 @@ import yaml
 
 
 @dataclass(frozen=True)
+class CriticRunConfig:
+    enabled: bool
+    interval_ticks: int
+    max_repairs: int
+    context_window_events: int
+    context_window_ticks: int
+
+
+@dataclass(frozen=True)
 class LLMTaskRunConfig:
     planner_type: str
     model: str
@@ -20,6 +29,7 @@ class LLMTaskRunConfig:
     max_tree_ticks: int
     retry_limit: int
     output_dir: str
+    critic: CriticRunConfig
 
 
 class RunConfigError(ValueError):
@@ -30,6 +40,7 @@ def load_llm_task_run_config(path: str) -> LLMTaskRunConfig:
     config_path = Path(path).expanduser().resolve()
     with config_path.open("r", encoding="utf-8") as handle:
         raw = yaml.safe_load(handle) or {}
+    critic_raw = raw.get("critic") or {}
 
     return LLMTaskRunConfig(
         planner_type=str(_require(raw, "planner_type")),
@@ -44,6 +55,13 @@ def load_llm_task_run_config(path: str) -> LLMTaskRunConfig:
         max_tree_ticks=int(_require(raw, "max_tree_ticks")),
         retry_limit=int(raw.get("retry_limit", 1)),
         output_dir=_resolve_path(config_path, _require(raw, "output_dir")),
+        critic=CriticRunConfig(
+            enabled=bool(critic_raw.get("enabled", False)),
+            interval_ticks=int(critic_raw.get("interval_ticks", 3)),
+            max_repairs=int(critic_raw.get("max_repairs", 1)),
+            context_window_events=int(critic_raw.get("context_window_events", 10)),
+            context_window_ticks=int(critic_raw.get("context_window_ticks", 6)),
+        ),
     )
 
 

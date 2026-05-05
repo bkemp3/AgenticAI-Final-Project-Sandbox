@@ -8,7 +8,13 @@ from openai import OpenAI
 from agentic.behaviors.catalog import BehaviorCatalog
 from agentic.bt_spec.tree_structure import BehaviorTreeStructure
 from agentic.planning.base import BasePlanner, PlannerError
-from agentic.planning.prompting import build_system_prompt, build_user_prompt
+from agentic.planning.prompting import (
+    build_behavior_subset_block,
+    build_repair_user_prompt,
+    build_system_prompt,
+    build_user_prompt,
+)
+from agentic.runtime_feedback import PlannerRepairRequest
 
 
 class LLMPlanner(BasePlanner):
@@ -33,6 +39,26 @@ class LLMPlanner(BasePlanner):
         self.plan_validator = plan_validator
 
     def create_plan(self, goal: str) -> BehaviorTreeStructure:
+        return self._create_plan_from_messages(
+            [
+                {
+                    "role": "system",
+                    "content": self.system_prompt_override or build_system_prompt(self.behavior_catalog),
+                },
+                {
+                    "role": "user",
+                    "content": self.user_prompt_override or build_user_prompt(goal, self.behavior_catalog),
+                },
+            ]
+        )
+
+    def repair_plan(
+        self,
+        goal: str,
+        current_tree: BehaviorTreeStructure,
+        repair_request: PlannerRepairRequest,
+    ) -> BehaviorTreeStructure:
+        base_user_prompt = self.user_prompt_override or build_user_prompt(goal, self.behavior_catalog)
         messages = [
             {
                 "role": "system",
@@ -40,9 +66,28 @@ class LLMPlanner(BasePlanner):
             },
             {
                 "role": "user",
-                "content": self.user_prompt_override or build_user_prompt(goal, self.behavior_catalog),
+                "content": build_repair_user_prompt(
+                    goal=goal,
+                    base_user_prompt=base_user_prompt,
+                    current_tree_json=current_tree.model_dump_json(indent=2),
+                    diagnosis=repair_request.diagnosis,
+                    repair_instructions=repair_request.repair_instructions,
+                    suspected_node=repair_request.suspected_node,
+                    visible_world_observation=repair_request.visible_world_observation,
+                    recent_events=repair_request.recent_events,
+                    recent_tick_trace=repair_request.recent_tick_trace,
+                    task_progress_signals=repair_request.task_progress_signals,
+                    metrics=repair_request.metrics,
+                    used_behavior_block=(
+                        "Behavior descriptions for nodes used in the current tree:\n"
+                        + build_behavior_subset_block(self.behavior_catalog, current_tree)
+                    ),
+                ),
             },
         ]
+        return self._create_plan_from_messages(messages)
+
+    def _create_plan_from_messages(self, messages: list[dict[str, str]]) -> BehaviorTreeStructure:
         last_error: str | None = None
 
         for attempt in range(self.retry_limit + 1):

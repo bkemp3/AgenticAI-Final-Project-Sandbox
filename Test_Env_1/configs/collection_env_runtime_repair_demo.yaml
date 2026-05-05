@@ -1,0 +1,15 @@
+grid_size: [4, 4]
+target_weight: 2
+target_value: 11
+carry_capacity: 3
+max_timesteps: 10
+dropoff_location: [0, 0]
+disappear_prob: 0.0
+default_pickup_failure_prob: 0.0
+seed: 1
+objects:
+  - object_id: silver_cylinder_0
+    position: [1, 0]
+    weight: 2
+    value: 11
+    pickup_failure_prob: 0.0

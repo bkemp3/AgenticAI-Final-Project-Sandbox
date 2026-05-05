@@ -1,6 +1,5 @@
 import json
 import sys
-from dataclasses import asdict, is_dataclass
 from pathlib import Path
 
 # Allow running the demo directly from the repository root.
@@ -15,6 +14,7 @@ from agentic.planning.prompting import (
     build_run_user_prompt,
 )
 from agentic.planning.run_config import load_llm_task_run_config
+from agentic.serialization import serialize_value
 from agentic.tasks import load_task_adapter
 
 
@@ -54,6 +54,8 @@ def main() -> None:
     final_state = app.invoke(
         {
             "goal": run_config.goal,
+            "model": run_config.model,
+            "task_prompt": run_config.task_prompt,
             "planner_type": run_config.planner_type,
             "world_state": world,
             "behavior_catalog": behavior_catalog,
@@ -62,15 +64,30 @@ def main() -> None:
             "user_prompt_override": user_prompt,
             "max_tree_ticks": run_config.max_tree_ticks,
             "retry_limit": run_config.retry_limit,
+            "critic_enabled": run_config.critic.enabled,
+            "critic_interval_ticks": run_config.critic.interval_ticks,
+            "critic_max_repairs": run_config.critic.max_repairs,
+            "critic_context_window_events": run_config.critic.context_window_events,
+            "critic_context_window_ticks": run_config.critic.context_window_ticks,
             "tree_output_dir": str(output_dir / "trees"),
             "planner": None,
+            "runtime_critic": None,
             "tree_spec": None,
             "compiled_tree": None,
             "execution_status": None,
+            "runtime_bt_status": None,
             "error_message": None,
             "tree_image_path": None,
             "graph_mermaid_path": graph_artifacts["mermaid"],
             "graph_image_path": graph_artifacts["png"],
+            "tick_count": 0,
+            "repair_count": 0,
+            "runtime_tick_trace": [],
+            "critic_decision": None,
+            "critic_history": [],
+            "planner_repair_request": None,
+            "critic_due": False,
+            "execution_should_continue": False,
         }
     )
     if final_state.get("error_message"):
@@ -102,12 +119,20 @@ def main() -> None:
     metrics = task_adapter.get_metrics(world)
     print(f"Final metrics: {metrics}")
     (output_dir / "metrics.json").write_text(
-        json.dumps(_serialize_value(metrics), indent=2) + "\n",
+        json.dumps(serialize_value(metrics), indent=2) + "\n",
         encoding="utf-8",
     )
-    serialized_events = [_serialize_value(event) for event in task_adapter.get_events(world)]
+    serialized_events = [serialize_value(event) for event in task_adapter.get_events(world)]
     (output_dir / "events.json").write_text(
         json.dumps(serialized_events, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (output_dir / "runtime_tick_trace.json").write_text(
+        json.dumps(serialize_value(final_state.get("runtime_tick_trace") or []), indent=2) + "\n",
+        encoding="utf-8",
+    )
+    (output_dir / "critic_history.json").write_text(
+        json.dumps(serialize_value(final_state.get("critic_history") or []), indent=2) + "\n",
         encoding="utf-8",
     )
     print("Event log:")
@@ -122,13 +147,6 @@ def _parse_config_path() -> str:
     if len(sys.argv) == 2:
         return sys.argv[1]
     return str(Path(__file__).resolve().parents[1] / "configs" / "llm_collection_run.yaml")
-
-
-def _serialize_value(value):
-    if is_dataclass(value):
-        return asdict(value)
-    return value
-
 
 def _collect_tree_artifacts(tree_image_path: str | None) -> dict[str, str] | None:
     if tree_image_path is None:
