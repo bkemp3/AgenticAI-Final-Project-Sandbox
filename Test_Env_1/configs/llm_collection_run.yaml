@@ -15,6 +15,8 @@ max_tree_ticks: 30
 retry_limit: 1
 output_dir: ../outputs
 output_namespace: collection_llm_runs
+logging:
+  render_grid_each_tick: true
 critic:
   enabled: true
   model: gpt-5.4

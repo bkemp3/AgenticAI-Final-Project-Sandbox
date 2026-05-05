@@ -17,6 +17,11 @@ class CriticRunConfig:
 
 
 @dataclass(frozen=True)
+class LoggingRunConfig:
+    render_grid_each_tick: bool
+
+
+@dataclass(frozen=True)
 class LLMTaskRunConfig:
     planner_type: str
     model: str
@@ -31,6 +36,7 @@ class LLMTaskRunConfig:
     retry_limit: int
     output_dir: str
     output_namespace: str | None
+    logging: LoggingRunConfig
     critic: CriticRunConfig
 
 
@@ -43,6 +49,7 @@ def load_llm_task_run_config(path: str) -> LLMTaskRunConfig:
     with config_path.open("r", encoding="utf-8") as handle:
         raw = yaml.safe_load(handle) or {}
     critic_raw = raw.get("critic") or {}
+    logging_raw = raw.get("logging") or {}
 
     return LLMTaskRunConfig(
         planner_type=str(_require(raw, "planner_type")),
@@ -58,6 +65,9 @@ def load_llm_task_run_config(path: str) -> LLMTaskRunConfig:
         retry_limit=int(raw.get("retry_limit", 1)),
         output_dir=_resolve_path(config_path, _require(raw, "output_dir")),
         output_namespace=str(raw["output_namespace"]).strip() if raw.get("output_namespace") is not None else None,
+        logging=LoggingRunConfig(
+            render_grid_each_tick=bool(logging_raw.get("render_grid_each_tick", True)),
+        ),
         critic=CriticRunConfig(
             enabled=bool(critic_raw.get("enabled", False)),
             model=str(critic_raw["model"]) if critic_raw.get("model") is not None else None,

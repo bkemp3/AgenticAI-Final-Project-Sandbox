@@ -28,6 +28,8 @@ class OrchestrationState(TypedDict):
     critic_max_repairs: int | None
     critic_context_window_events: int | None
     critic_context_window_ticks: int | None
+    render_grid_each_tick: bool
+    world_trace_path: str | None
     tree_output_dir: str | None
     planner: BasePlanner | None
     runtime_critic: object | None

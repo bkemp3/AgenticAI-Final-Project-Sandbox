@@ -107,6 +107,8 @@ def main() -> None:
             "critic_max_repairs": 1,
             "critic_context_window_events": 6,
             "critic_context_window_ticks": 6,
+            "render_grid_each_tick": False,
+            "world_trace_path": None,
             "tree_output_dir": str(repo_root / "outputs" / "trees"),
             "planner": ScriptedRepairPlanner(),
             "runtime_critic": ScriptedRuntimeCritic(),

@@ -40,6 +40,7 @@ def execute_tree_batch(
                 tick=tick_number,
                 bt_status=status.name,
                 summary=task_adapter.describe_tick(world_state, tree, tick_number),
+                world_render=task_adapter.render_tick(world_state, tree, tick_number),
                 active_nodes=_collect_active_nodes(tree.root),
             )
         )

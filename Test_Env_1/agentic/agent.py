@@ -41,6 +41,8 @@ class Agent:
             "critic_max_repairs": None,
             "critic_context_window_events": None,
             "critic_context_window_ticks": None,
+            "render_grid_each_tick": False,
+            "world_trace_path": None,
             "tree_output_dir": None,
             "planner": None,
             "runtime_critic": None,

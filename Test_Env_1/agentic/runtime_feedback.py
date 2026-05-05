@@ -26,6 +26,7 @@ class RuntimeTickTraceEntry(BaseModel):
     tick: int
     bt_status: str
     summary: str
+    world_render: str | None = None
     active_nodes: list[dict[str, str]] = Field(default_factory=list)
 
 

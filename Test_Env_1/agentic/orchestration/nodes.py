@@ -198,7 +198,7 @@ def execute_tree_node(state: OrchestrationState) -> dict[str, object]:
         full_trace.extend(serialize_value(entry) for entry in result.tick_trace)
 
         if result.task_success:
-            return {
+            updates = {
                 "tick_count": total_ticks,
                 "runtime_bt_status": result.bt_status,
                 "runtime_tick_trace": full_trace,
@@ -206,8 +206,10 @@ def execute_tree_node(state: OrchestrationState) -> dict[str, object]:
                 "execution_should_continue": False,
                 "critic_due": False,
             }
+            _emit_world_trace(state, result.tick_trace)
+            return updates
         if result.task_terminal:
-            return {
+            updates = {
                 "tick_count": total_ticks,
                 "runtime_bt_status": result.bt_status,
                 "runtime_tick_trace": full_trace,
@@ -215,8 +217,10 @@ def execute_tree_node(state: OrchestrationState) -> dict[str, object]:
                 "execution_should_continue": False,
                 "critic_due": False,
             }
+            _emit_world_trace(state, result.tick_trace)
+            return updates
         if total_ticks >= max_tree_ticks:
-            return {
+            updates = {
                 "tick_count": total_ticks,
                 "runtime_bt_status": result.bt_status,
                 "runtime_tick_trace": full_trace,
@@ -224,10 +228,12 @@ def execute_tree_node(state: OrchestrationState) -> dict[str, object]:
                 "execution_should_continue": False,
                 "critic_due": False,
             }
+            _emit_world_trace(state, result.tick_trace)
+            return updates
 
         critic_due = bool(state.get("critic_enabled")) and (result.bt_terminal or result.ticks_executed >= batch_limit)
         if result.bt_terminal and not critic_due:
-            return {
+            updates = {
                 "tick_count": total_ticks,
                 "runtime_bt_status": result.bt_status,
                 "runtime_tick_trace": full_trace,
@@ -235,8 +241,10 @@ def execute_tree_node(state: OrchestrationState) -> dict[str, object]:
                 "execution_should_continue": False,
                 "critic_due": False,
             }
+            _emit_world_trace(state, result.tick_trace)
+            return updates
 
-        return {
+        updates = {
             "tick_count": total_ticks,
             "runtime_bt_status": result.bt_status,
             "runtime_tick_trace": full_trace,
@@ -244,6 +252,8 @@ def execute_tree_node(state: OrchestrationState) -> dict[str, object]:
             "execution_should_continue": not result.bt_terminal,
             "critic_due": critic_due,
         }
+        _emit_world_trace(state, result.tick_trace)
+        return updates
     except Exception as exc:
         return _error_update(f"Tree execution failed: {exc}")
 
@@ -349,6 +359,22 @@ def _pick_tree_image_path(artifacts: dict[str, str] | None) -> str | None:
 
 def _error_update(message: str) -> dict[str, object]:
     return {"error_message": message, "execution_should_continue": False, "critic_due": False}
+
+
+def _emit_world_trace(state: OrchestrationState, tick_trace) -> None:
+    if not state.get("render_grid_each_tick"):
+        return
+    path = state.get("world_trace_path")
+    if not path:
+        return
+    blocks = [entry.world_render for entry in tick_trace if getattr(entry, "world_render", None)]
+    if not blocks:
+        return
+    rendered = "\n\n" + ("\n\n" + ("-" * 80) + "\n\n").join(blocks) + "\n"
+    print(rendered, end="")
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    with Path(path).open("a", encoding="utf-8") as handle:
+        handle.write(rendered)
 
 
 def _persist_tree_spec(
