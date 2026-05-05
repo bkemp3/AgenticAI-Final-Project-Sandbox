@@ -3,9 +3,6 @@ import sys
 from dataclasses import asdict, is_dataclass
 from pathlib import Path
 
-import py_trees
-import yaml
-
 # Allow running the demo directly from the repository root.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -17,17 +14,18 @@ from agentic.planning.prompting import (
     SYSTEM_PROMPT_PATH,
     build_run_system_prompt,
     build_run_user_prompt,
-    summarize_collection_config,
 )
 from agentic.planning.run_config import load_llm_task_run_config
-from agentic.simulation import CollectionWorld, load_collection_config
+from agentic.tasks import load_task_adapter
 
 
 def main() -> None:
     config_path = _parse_config_path()
     run_config = load_llm_task_run_config(config_path)
+    task_adapter = load_task_adapter(run_config.task_adapter)
     behavior_catalog = load_behavior_catalog(run_config.behavior_set_path)
-    world, environment_summary = _load_world_and_summary(run_config.environment_config_path)
+    world = task_adapter.load_world(run_config.environment_config_path)
+    environment_summary = task_adapter.summarize_world(world)
 
     base_system_prompt = SYSTEM_PROMPT_PATH.read_text(encoding="utf-8").strip()
     task_system_prompt = Path(run_config.system_prompt_path).read_text(encoding="utf-8").strip()
@@ -48,6 +46,7 @@ def main() -> None:
         system_prompt_override=system_prompt,
         user_prompt_override=user_prompt,
         retry_limit=run_config.retry_limit,
+        plan_validator=task_adapter.validate_plan,
     )
     tree_spec = planner.create_plan(run_config.goal)
     tree = compile_behavior_tree(tree_spec, world, behavior_catalog.runtime_registry())
@@ -82,67 +81,35 @@ def main() -> None:
 
     printed_events = 0
     for tick in range(run_config.max_tree_ticks):
-        if world.is_terminal():
+        if task_adapter.is_terminal(world):
             break
         tree.tick()
-        blackboard = py_trees.blackboard.Blackboard()
-        selected_object = _safe_blackboard_get(blackboard, "/selected_object_id")
-        print(
-            f"tick={tick} status={tree.root.status} selected_object={selected_object} "
-            f"position={world.state.robot.position} held={world.state.robot.holding_object_id}"
-        )
-        for event in world.events[printed_events:]:
+        print(task_adapter.describe_tick(world, tree, tick))
+        events = task_adapter.get_events(world)
+        for event in events[printed_events:]:
             print(f"  event: {event}")
-        printed_events = len(world.events)
+        printed_events = len(events)
 
-    metrics = world.get_metrics()
+    metrics = task_adapter.get_metrics(world)
     print(f"Final metrics: {metrics}")
-    (output_dir / "metrics.json").write_text(json.dumps(asdict(metrics), indent=2) + "\n", encoding="utf-8")
-    serialized_events = [_serialize_event(event) for event in world.events]
+    (output_dir / "metrics.json").write_text(json.dumps(_serialize_value(metrics), indent=2) + "\n", encoding="utf-8")
+    serialized_events = [_serialize_value(event) for event in task_adapter.get_events(world)]
     (output_dir / "events.json").write_text(json.dumps(serialized_events, indent=2) + "\n", encoding="utf-8")
 
 
 def _parse_config_path() -> str:
     if len(sys.argv) > 2 or (len(sys.argv) == 2 and sys.argv[1] in {"-h", "--help"}):
-        print("Usage: uv run python examples/llm_task_demo.py [configs/llm_collection_run.yaml]", file=sys.stderr)
+        print("Usage: uv run python examples/llm_task_demo.py [path/to/run_config.yaml]", file=sys.stderr)
         raise SystemExit(2)
     if len(sys.argv) == 2:
         return sys.argv[1]
     return str(Path(__file__).resolve().parents[1] / "configs" / "llm_collection_run.yaml")
 
 
-def _load_world_and_summary(environment_config_path: str) -> tuple[CollectionWorld, str]:
-    raw_config = _load_yaml(environment_config_path)
-    if _is_collection_environment(raw_config):
-        config, objects = load_collection_config(environment_config_path)
-        return CollectionWorld(config=config, objects=objects), summarize_collection_config(config)
-    raise ValueError(
-        "Unsupported environment config for llm_task_demo. "
-        "Currently only collection-task environments are supported."
-    )
-
-
-def _load_yaml(path: str) -> dict[str, object]:
-    with Path(path).open("r", encoding="utf-8") as handle:
-        return yaml.safe_load(handle) or {}
-
-
-def _is_collection_environment(raw_config: dict[str, object]) -> bool:
-    required_keys = {"grid_size", "target_weight", "target_value", "carry_capacity", "max_timesteps", "dropoff_location"}
-    return required_keys.issubset(raw_config)
-
-
-def _safe_blackboard_get(blackboard: py_trees.blackboard.Blackboard, key: str):
-    try:
-        return blackboard.get(key)
-    except KeyError:
-        return None
-
-
-def _serialize_event(event):
-    if is_dataclass(event):
-        return asdict(event)
-    return event
+def _serialize_value(value):
+    if is_dataclass(value):
+        return asdict(value)
+    return value
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 
 from openai import OpenAI
 
@@ -21,6 +22,7 @@ class LLMPlanner(BasePlanner):
         system_prompt_override: str | None = None,
         user_prompt_override: str | None = None,
         retry_limit: int = 0,
+        plan_validator: Callable[[BehaviorTreeStructure], str | None] | None = None,
     ) -> None:
         self.behavior_catalog = behavior_catalog
         self.model = model
@@ -28,6 +30,7 @@ class LLMPlanner(BasePlanner):
         self.system_prompt_override = system_prompt_override
         self.user_prompt_override = user_prompt_override
         self.retry_limit = retry_limit
+        self.plan_validator = plan_validator
 
     def create_plan(self, goal: str) -> BehaviorTreeStructure:
         messages = [
@@ -53,9 +56,18 @@ class LLMPlanner(BasePlanner):
                 last_error = "LLM planner did not return parsable structured output."
             else:
                 try:
-                    return BehaviorTreeStructure.model_validate(parsed.model_dump())
+                    plan = BehaviorTreeStructure.model_validate(parsed.model_dump())
                 except Exception as exc:
                     last_error = f"LLM planner returned invalid plan data: {exc}"
+                else:
+                    if self.plan_validator is not None:
+                        validation_error = self.plan_validator(plan)
+                        if validation_error is not None:
+                            last_error = f"LLM planner returned a semantically invalid plan: {validation_error}"
+                        else:
+                            return plan
+                    else:
+                        return plan
 
             if attempt < self.retry_limit:
                 messages.append(

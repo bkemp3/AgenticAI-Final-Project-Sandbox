@@ -10,6 +10,7 @@ import yaml
 class LLMTaskRunConfig:
     planner_type: str
     model: str
+    task_adapter: str
     environment_config_path: str
     behavior_set_path: str
     goal: str
@@ -33,6 +34,7 @@ def load_llm_task_run_config(path: str) -> LLMTaskRunConfig:
     return LLMTaskRunConfig(
         planner_type=str(_require(raw, "planner_type")),
         model=str(_require(raw, "model")),
+        task_adapter=str(_require(raw, "task_adapter")),
         environment_config_path=_resolve_path(config_path, _require(raw, "environment_config_path")),
         behavior_set_path=_resolve_path(config_path, _require(raw, "behavior_set_path")),
         goal=str(_require(raw, "goal")),

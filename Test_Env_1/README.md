@@ -96,9 +96,9 @@ This demo loads the YAML environment, advances the simulator by one timestep, sh
 - Environment parameters live in YAML, with a sample at `configs/collection_env.yaml`.
 - The simulator tracks hidden object state, stochastic pickup failures, object disappearance, event logs, observations, and task metrics.
 - For collection tasks, `behavior_sets/collection.yaml` defines the BT leaves and allowed leaf params available to an LLM planner, while `configs/collection_env.yaml` defines the simulator environment.
-- `configs/llm_collection_run.yaml` is the minimal top-level run config for LLM-driven collection experiments. It points to the environment YAML, behavior-set YAML, system prompt file, model name, task prompt, and tick budget.
+- `configs/llm_collection_run.yaml` is the minimal top-level run config for LLM-driven collection experiments. It points to a task adapter, environment YAML, behavior-set YAML, system prompt file, model name, task prompt, and tick budget.
 - `configs/llm_collection_run.yaml` also controls whether a high-level environment summary is included in the user prompt and how many times the planner retries after validation failure.
 - `prompts/collection_planner_system.txt` stores the collection-specific system prompt referenced by the run config.
 - `prompts/planner_system_base.txt` and `prompts/planner_user_base.txt` store the reusable planner prompt text used by `agentic/planning/prompting.py`.
 - `examples/collection_compiled_tree_demo.py` shows the two-YAML split by loading the collection behavior set, loading the collection environment, compiling a generated-style tree, and executing it against the simulator.
-- `examples/llm_task_demo.py` loads a run config, composes the final prompts from prompt assets plus behavior metadata, asks the LLM for a tree, executes it against the simulator, and writes prompts, events, metrics, and the generated tree spec to the configured output directory.
+- `examples/llm_task_demo.py` is a task-agnostic runner. It loads a run config, imports the configured task adapter, composes the final prompts from prompt assets plus behavior metadata, asks the LLM for a tree, executes it against the adapter-provided world, and writes prompts, events, metrics, and the generated tree spec to the configured output directory.

@@ -1,5 +1,6 @@
 planner_type: llm
-model: gpt-4.1-mini
+model: gpt-5.4
+task_adapter: agentic.tasks.collection.adapter
 environment_config_path: collection_env.yaml
 behavior_set_path: ../behavior_sets/collection.yaml
 goal: maximize_collection_value

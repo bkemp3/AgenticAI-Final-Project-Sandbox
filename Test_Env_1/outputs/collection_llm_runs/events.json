@@ -1,1 +1,162 @@
-[]
+[
+  {
+    "timestep": 0,
+    "event_type": "move",
+    "object_id": null,
+    "details": {
+      "from": [
+        0,
+        0
+      ],
+      "to": [
+        1,
+        0
+      ],
+      "held_object_id": null
+    }
+  },
+  {
+    "timestep": 1,
+    "event_type": "move",
+    "object_id": null,
+    "details": {
+      "from": [
+        1,
+        0
+      ],
+      "to": [
+        2,
+        0
+      ],
+      "held_object_id": null
+    }
+  },
+  {
+    "timestep": 2,
+    "event_type": "pickup_success",
+    "object_id": "silver_cylinder",
+    "details": {
+      "weight": 2.0,
+      "value": 11.0,
+      "robot_position": [
+        2,
+        0
+      ],
+      "object_position": [
+        2,
+        0
+      ]
+    }
+  },
+  {
+    "timestep": 3,
+    "event_type": "move",
+    "object_id": null,
+    "details": {
+      "from": [
+        2,
+        0
+      ],
+      "to": [
+        1,
+        0
+      ],
+      "held_object_id": "silver_cylinder"
+    }
+  },
+  {
+    "timestep": 4,
+    "event_type": "move",
+    "object_id": null,
+    "details": {
+      "from": [
+        1,
+        0
+      ],
+      "to": [
+        0,
+        0
+      ],
+      "held_object_id": "silver_cylinder"
+    }
+  },
+  {
+    "timestep": 5,
+    "event_type": "deposit",
+    "object_id": "silver_cylinder",
+    "details": {
+      "weight": 2.0,
+      "value": 11.0,
+      "dropoff_location": [
+        0,
+        0
+      ],
+      "inventory_weight": 2.0,
+      "inventory_value": 11.0
+    }
+  },
+  {
+    "timestep": 6,
+    "event_type": "move",
+    "object_id": null,
+    "details": {
+      "from": [
+        0,
+        0
+      ],
+      "to": [
+        1,
+        0
+      ],
+      "held_object_id": null
+    }
+  },
+  {
+    "timestep": 7,
+    "event_type": "pickup_success",
+    "object_id": "bronze_cube",
+    "details": {
+      "weight": 3.0,
+      "value": 8.0,
+      "robot_position": [
+        1,
+        0
+      ],
+      "object_position": [
+        1,
+        0
+      ]
+    }
+  },
+  {
+    "timestep": 8,
+    "event_type": "move",
+    "object_id": null,
+    "details": {
+      "from": [
+        1,
+        0
+      ],
+      "to": [
+        0,
+        0
+      ],
+      "held_object_id": "bronze_cube"
+    }
+  },
+  {
+    "timestep": 9,
+    "event_type": "deposit",
+    "object_id": "bronze_cube",
+    "details": {
+      "weight": 3.0,
+      "value": 8.0,
+      "dropoff_location": [
+        0,
+        0
+      ],
+      "inventory_weight": 5.0,
+      "inventory_value": 19.0
+    }
+  }
+]
