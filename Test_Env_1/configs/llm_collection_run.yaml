@@ -1,0 +1,11 @@
+planner_type: llm
+model: gpt-4.1-mini
+environment_config_path: collection_env.yaml
+behavior_set_path: ../behavior_sets/collection.yaml
+goal: maximize_collection_value
+task_prompt: >-
+  Maximize total collected value before timeout while respecting carry capacity,
+  only acting through visible objects and depositing held objects at the dropoff.
+system_prompt_path: ../prompts/collection_planner_system.txt
+max_tree_ticks: 12
+output_dir: ../outputs/collection_llm_runs
