@@ -7,9 +7,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from agentic.behaviors import load_behavior_catalog
-from agentic.bt_runtime.compiler import compile_behavior_tree
-from agentic.bt_runtime.visualization import export_tree_image, print_ascii_tree
-from agentic.planning.llm_planner import LLMPlanner
+from agentic.orchestration.graph import build_orchestration_app
+from agentic.orchestration.visualization import export_langgraph_visualization
 from agentic.planning.prompting import (
     SYSTEM_PROMPT_PATH,
     build_run_system_prompt,
@@ -40,32 +39,47 @@ def main() -> None:
         environment_summary=environment_summary if run_config.user_prompt_include_environment_summary else None,
     )
 
-    planner = LLMPlanner(
-        behavior_catalog=behavior_catalog,
-        model=run_config.model,
-        system_prompt_override=system_prompt,
-        user_prompt_override=user_prompt,
-        retry_limit=run_config.retry_limit,
-        plan_validator=task_adapter.validate_plan,
-    )
-    tree_spec = planner.create_plan(run_config.goal)
-    tree = compile_behavior_tree(tree_spec, world, behavior_catalog.runtime_registry())
-
     output_dir = Path(run_config.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "system_prompt.txt").write_text(system_prompt + "\n", encoding="utf-8")
     (output_dir / "user_prompt.txt").write_text(user_prompt + "\n", encoding="utf-8")
-    (output_dir / "tree_spec.json").write_text(tree_spec.model_dump_json(indent=2) + "\n", encoding="utf-8")
-    tree_artifacts = export_tree_image(
-        tree,
-        name=run_config.goal,
-        output_dir=output_dir / "trees",
+
+    app = build_orchestration_app()
+    graph_artifacts = export_langgraph_visualization(
+        app,
+        name=f"{run_config.goal}_langgraph",
+        output_dir=output_dir / "graphs",
     )
-    if tree_artifacts:
-        (output_dir / "tree_artifacts.json").write_text(
-            json.dumps(tree_artifacts, indent=2) + "\n",
-            encoding="utf-8",
-        )
+
+    final_state = app.invoke(
+        {
+            "goal": run_config.goal,
+            "planner_type": run_config.planner_type,
+            "world_state": world,
+            "behavior_catalog": behavior_catalog,
+            "task_adapter": task_adapter,
+            "system_prompt_override": system_prompt,
+            "user_prompt_override": user_prompt,
+            "max_tree_ticks": run_config.max_tree_ticks,
+            "retry_limit": run_config.retry_limit,
+            "tree_output_dir": str(output_dir / "trees"),
+            "planner": None,
+            "tree_spec": None,
+            "compiled_tree": None,
+            "execution_status": None,
+            "error_message": None,
+            "tree_image_path": None,
+            "graph_mermaid_path": graph_artifacts["mermaid"],
+            "graph_image_path": graph_artifacts["png"],
+        }
+    )
+    if final_state.get("error_message"):
+        raise RuntimeError(final_state["error_message"])
+
+    tree_spec = final_state.get("tree_spec")
+    if tree_spec is None:
+        raise RuntimeError("Orchestration finished without a tree spec.")
+    (output_dir / "tree_spec.json").write_text(tree_spec.model_dump_json(indent=2) + "\n", encoding="utf-8")
 
     print(f"Run config: {run_config}")
     print("System prompt:")
@@ -74,27 +88,31 @@ def main() -> None:
     print(user_prompt)
     print("Generated tree spec:")
     print(tree_spec.model_dump_json(indent=2))
-    print("Compiled behavior tree:")
-    print_ascii_tree(tree)
+    print(f"Execution status: {final_state.get('execution_status')}")
+    print(f"LangGraph artifacts: {graph_artifacts}")
+
+    tree_artifacts = _collect_tree_artifacts(final_state.get("tree_image_path"))
     if tree_artifacts:
         print(f"Tree image artifacts: {tree_artifacts}")
-
-    printed_events = 0
-    for tick in range(run_config.max_tree_ticks):
-        if task_adapter.is_terminal(world):
-            break
-        tree.tick()
-        print(task_adapter.describe_tick(world, tree, tick))
-        events = task_adapter.get_events(world)
-        for event in events[printed_events:]:
-            print(f"  event: {event}")
-        printed_events = len(events)
+        (output_dir / "tree_artifacts.json").write_text(
+            json.dumps(tree_artifacts, indent=2) + "\n",
+            encoding="utf-8",
+        )
 
     metrics = task_adapter.get_metrics(world)
     print(f"Final metrics: {metrics}")
-    (output_dir / "metrics.json").write_text(json.dumps(_serialize_value(metrics), indent=2) + "\n", encoding="utf-8")
+    (output_dir / "metrics.json").write_text(
+        json.dumps(_serialize_value(metrics), indent=2) + "\n",
+        encoding="utf-8",
+    )
     serialized_events = [_serialize_value(event) for event in task_adapter.get_events(world)]
-    (output_dir / "events.json").write_text(json.dumps(serialized_events, indent=2) + "\n", encoding="utf-8")
+    (output_dir / "events.json").write_text(
+        json.dumps(serialized_events, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    print("Event log:")
+    for event in task_adapter.get_events(world):
+        print(f"  event: {event}")
 
 
 def _parse_config_path() -> str:
@@ -110,6 +128,20 @@ def _serialize_value(value):
     if is_dataclass(value):
         return asdict(value)
     return value
+
+
+def _collect_tree_artifacts(tree_image_path: str | None) -> dict[str, str] | None:
+    if tree_image_path is None:
+        return None
+    artifact_path = Path(tree_image_path)
+    stem = artifact_path.stem
+    directory = artifact_path.parent
+    artifacts: dict[str, str] = {}
+    for suffix in ("dot", "svg", "png"):
+        candidate = directory / f"{stem}.{suffix}"
+        if candidate.exists():
+            artifacts[suffix] = str(candidate)
+    return artifacts or None
 
 
 if __name__ == "__main__":

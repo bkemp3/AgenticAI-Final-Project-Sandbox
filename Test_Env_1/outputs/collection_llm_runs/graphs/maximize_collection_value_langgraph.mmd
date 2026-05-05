@@ -1,0 +1,29 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	select_planner(select_planner)
+	generate_plan(generate_plan)
+	compile_tree(compile_tree)
+	visualize_tree(visualize_tree)
+	execute_tree(execute_tree)
+	handle_error(handle_error)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> select_planner;
+	compile_tree -.-> handle_error;
+	compile_tree -. &nbsp;next&nbsp; .-> visualize_tree;
+	execute_tree -. &nbsp;end&nbsp; .-> __end__;
+	execute_tree -.-> handle_error;
+	generate_plan -. &nbsp;next&nbsp; .-> compile_tree;
+	generate_plan -.-> handle_error;
+	select_planner -. &nbsp;next&nbsp; .-> generate_plan;
+	select_planner -.-> handle_error;
+	visualize_tree -. &nbsp;next&nbsp; .-> execute_tree;
+	visualize_tree -.-> handle_error;
+	handle_error --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc

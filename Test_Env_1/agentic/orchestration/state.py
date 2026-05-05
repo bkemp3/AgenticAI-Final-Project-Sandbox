@@ -14,6 +14,12 @@ class OrchestrationState(TypedDict):
     planner_type: str
     world_state: object
     behavior_catalog: BehaviorCatalog
+    task_adapter: object | None
+    system_prompt_override: str | None
+    user_prompt_override: str | None
+    max_tree_ticks: int | None
+    retry_limit: int | None
+    tree_output_dir: str | None
     planner: BasePlanner | None
     tree_spec: BehaviorTreeStructure | None
     compiled_tree: object | None

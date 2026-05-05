@@ -15,7 +15,15 @@ def select_planner(state: OrchestrationState) -> dict[str, object]:
 
     planner_type = _normalize_planner_type(state["planner_type"])
     if planner_type == "llm":
-        planner = LLMPlanner(behavior_catalog=state["behavior_catalog"])
+        task_adapter = state.get("task_adapter")
+        plan_validator = getattr(task_adapter, "validate_plan", None) if task_adapter is not None else None
+        planner = LLMPlanner(
+            behavior_catalog=state["behavior_catalog"],
+            system_prompt_override=state.get("system_prompt_override"),
+            user_prompt_override=state.get("user_prompt_override"),
+            retry_limit=state.get("retry_limit") or 0,
+            plan_validator=plan_validator,
+        )
     else:
         planner = RuleBasedPlanner(behavior_catalog=state["behavior_catalog"])
     return {"planner": planner, "planner_type": planner_type}
@@ -63,7 +71,11 @@ def visualize_tree(state: OrchestrationState) -> dict[str, object]:
 
         print("Runtime behavior tree:")
         print_ascii_tree(compiled_tree)
-        artifacts = export_tree_image(compiled_tree, name=state["tree_spec"].goal)
+        artifacts = export_tree_image(
+            compiled_tree,
+            name=state["tree_spec"].goal,
+            output_dir=state.get("tree_output_dir") or "outputs/trees",
+        )
         tree_image_path = _pick_tree_image_path(artifacts)
         return {"tree_image_path": tree_image_path}
     except Exception as exc:
@@ -77,7 +89,7 @@ def execute_tree_node(state: OrchestrationState) -> dict[str, object]:
         compiled_tree = state["compiled_tree"]
         if compiled_tree is None:
             raise ValueError("No compiled tree is available to execute.")
-        result = execute_tree(compiled_tree)
+        result = execute_tree(compiled_tree, max_ticks=state.get("max_tree_ticks") or 10)
         return {"execution_status": result.name}
     except Exception as exc:
         return _error_update(f"Tree execution failed: {exc}")
